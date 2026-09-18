@@ -1,0 +1,30 @@
+{
+  "name": "stadilearn-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Stadilearn main platform (stadilearn.co.ke): public website, accounts, AI assistants, dashboards and Moodle read-only reporting.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "ai:index": "tsx --env-file-if-exists=.env.local scripts/index-moodle.ts",
+    "dev:session": "tsx --env-file-if-exists=.env.local scripts/dev-session.ts"
+  },
+  "dependencies": {
+    "mysql2": "^3.24.4",
+    "next": "^16.3.5",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "^10.6.0",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
+}
