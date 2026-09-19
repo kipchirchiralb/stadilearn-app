@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LearnerDashboard } from "@/components/dashboard/LearnerDashboard";
+import { SuperAdminDashboard } from "@/components/dashboard/SuperAdminDashboard";
 import { TeacherDashboard } from "@/components/dashboard/TeacherDashboard";
 import { Section } from "@/components/ui";
+import { getSuperAdminDashboard } from "@/lib/admin-dashboard";
 import { getLearnerDashboard, getTeacherDashboard } from "@/lib/dashboard";
 import { getSessionUser } from "@/lib/auth/session";
 
@@ -19,6 +21,15 @@ export default async function DashboardPage() {
     return (
       <Section tone="low">
         <LearnerDashboard data={data} firstName={firstName} />
+      </Section>
+    );
+  }
+
+  if (user.accountType === "super_admin") {
+    const data = await getSuperAdminDashboard();
+    return (
+      <Section tone="low">
+        <SuperAdminDashboard data={data} firstName={firstName} />
       </Section>
     );
   }

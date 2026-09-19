@@ -6,16 +6,18 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_ENV=production node server.js",
     "typecheck": "tsc --noEmit",
     "ai:index": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/index-moodle.ts",
     "dev:session": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/dev-session.ts"
   },
   "dependencies": {
+    "chart.js": "^4.5.1",
     "mysql2": "^3.24.4",
     "next": "^16.3.5",
     "nodemailer": "^10.0.10",
     "react": "^19.3.0",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.3.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1"
