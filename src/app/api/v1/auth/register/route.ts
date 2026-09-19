@@ -1,11 +1,11 @@
-import { ROLES, isEmail } from "@/lib/validation";
+import { NextResponse } from "next/server";
+import { requestIp } from "@/lib/auth/http";
+import { startRegistration } from "@/lib/auth/register";
+import { ROLES, isEmail, type SignupRole } from "@/lib/validation";
 
 /**
- * Start registration: validate details and send a verification code.
+ * Start registration: create a pending account, record consent, and email a code.
  * Returns the same response whether or not the email already has an account.
- *
- * TODO(next phase): create a pending account, record consent with purpose and
- * timestamp, and trigger the OTP flow.
  */
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -14,16 +14,32 @@ export async function POST(request: Request) {
   const fullName = typeof body?.fullName === "string" ? body.fullName.trim() : "";
   if (fullName.length < 2 || fullName.length > 120) errors.fullName = "Enter your full name.";
   if (!isEmail(body?.email)) errors.email = "Enter a valid email address.";
-  if (!ROLES.includes(body?.role)) errors.role = "Choose how you will use Stadilearn.";
+  if (!ROLES.includes(body?.role as SignupRole)) errors.role = "Choose how you will use Stadilearn.";
   if (body?.role === "institution" && !(typeof body?.organization === "string" && body.organization.trim().length >= 2)) {
     errors.organization = "Enter your institution or organisation name.";
   }
   if (body?.acceptTerms !== true) errors.acceptTerms = "You need to accept the terms and privacy notice.";
   if (body?.ageConfirmed !== true) errors.ageConfirmed = "Confirm your age or guardian consent.";
 
-  if (Object.keys(errors).length) return Response.json({ errors }, { status: 400 });
+  if (Object.keys(errors).length) return NextResponse.json({ errors }, { status: 400 });
 
-  return Response.json(
+  try {
+    await startRegistration({
+      fullName,
+      email: body.email,
+      role: body.role as SignupRole,
+      organization: typeof body?.organization === "string" ? body.organization : undefined,
+      jobTitle: typeof body?.jobTitle === "string" ? body.jobTitle : undefined,
+      county: typeof body?.county === "string" ? body.county : undefined,
+      demographicsConsent: body?.demographicsConsent === true,
+      ip: requestIp(request),
+    });
+  } catch (err) {
+    console.error("[auth] register failed", err);
+    return NextResponse.json({ error: "We could not create your account right now. Please try again." }, { status: 500 });
+  }
+
+  return NextResponse.json(
     { ok: true, message: "Check your email for a 6-digit code to confirm your account." },
     { status: 202 },
   );

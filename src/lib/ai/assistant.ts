@@ -92,7 +92,7 @@ export async function askAssistant(input: {
       "INSERT INTO ai_conversations (user_id, assistant, moodle_course_id, title) VALUES (?, ?, ?, ?)",
       [user.id, assistant, courseId, message.replace(/\s+/g, " ").slice(0, 80)],
     );
-    conversationId = res.insertId;
+    conversationId = Number(res.insertId);
   }
   const convId: number = conversationId;
   const history = await appDb.query<{ role: "user" | "assistant"; content: string }>(
@@ -114,7 +114,13 @@ export async function askAssistant(input: {
 
   try {
     const [k, minScore] = await Promise.all([getSetting("ai.tutor.top_k", 6), getSetting("ai.tutor.min_score", 0.55)]);
-    const retrieval = await retrieve(provider, searchText, { courseId, k: Number(k), minScore: Number(minScore) });
+    const scope = assistant === "support" ? "platform" : assistant === "tutor" ? "course" : "all";
+    const retrieval = await retrieve(provider, searchText, {
+      courseId: assistant === "tutor" ? courseId : null,
+      k: Number(k),
+      minScore: Number(minScore),
+      scope,
+    });
     const chunks: RetrievedChunk[] = retrieval.chunks;
     inputTokens += retrieval.embedTokens;
 

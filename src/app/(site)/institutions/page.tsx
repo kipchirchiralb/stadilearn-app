@@ -49,7 +49,7 @@ export default function InstitutionsPage() {
             { icon: "account_tree", title: "Courses and cohorts in Moodle", body: "Learners are organised into Moodle cohorts and groups with assigned trainers and access dates." },
             { icon: "person_add", title: "Trainer assignment and learner support", body: "Assign trainers to cohorts; learners get AI assistance and a support route with human escalation." },
             { icon: "dashboard", title: "Institution-scoped dashboards", body: "Your account sees only your institution's cohorts. Access is checked on the server, not just hidden in the interface." },
-            { icon: "translate", title: "English and Kiswahili", body: "Learner-facing navigation, key content and AI tutor interaction support both languages where available." },
+            { icon: "school", title: "Kenyan classroom context", body: "Programmes, examples and reporting are shaped for Kenyan schools, counties and TVET settings." },
             { icon: "tune", title: "Responsible AI with limits", body: "AI assistance runs within configurable usage limits per programme, and normal Moodle access continues if AI is unavailable." },
           ]}
         />

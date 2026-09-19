@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { MarkdownMessage } from "@/components/ai/MarkdownMessage";
 import { FormAlert, inputClass } from "@/components/forms/fields";
 
 type Kind = "tutor" | "support" | "trainer";
@@ -10,7 +11,7 @@ type ConversationSummary = { id: number; assistant: Kind; title: string };
 
 const KINDS: { value: Kind; label: string; icon: string; hint: string }[] = [
   { value: "tutor", label: "Tutor", icon: "psychology", hint: "Explanations, hints and examples from your course material." },
-  { value: "support", label: "Support", icon: "support_agent", hint: "Accounts, sign-in, enrolment, certificates and finding your way." },
+  { value: "support", label: "Support", icon: "support_agent", hint: "Accounts, one-time codes, finding pages, and how to study in Moodle." },
   { value: "trainer", label: "Trainer", icon: "edit_note", hint: "Draft lesson plans, quizzes, feedback and admin documents." },
 ];
 
@@ -29,8 +30,16 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
-export function AssistantChat({ firstName, canUseTrainer }: { firstName: string; canUseTrainer: boolean }) {
-  const [kind, setKind] = useState<Kind>("tutor");
+export function AssistantChat({
+  firstName,
+  canUseTrainer,
+  initialKind = "tutor",
+}: {
+  firstName: string;
+  canUseTrainer: boolean;
+  initialKind?: Kind;
+}) {
+  const [kind, setKind] = useState<Kind>(initialKind === "trainer" && !canUseTrainer ? "tutor" : initialKind);
   const [courseId, setCourseId] = useState<number | "">("");
   const [courses, setCourses] = useState<{ id: number; title: string }[]>([]);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
@@ -129,7 +138,7 @@ export function AssistantChat({ firstName, canUseTrainer }: { firstName: string;
   const current = kinds.find((k) => k.value === kind) ?? kinds[0];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-gutter">
+    <div className="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)] gap-gutter">
       <aside className="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm h-fit">
         <button
           className="w-full inline-flex items-center justify-center gap-space-xs bg-primary-container text-on-primary font-label-md text-label-md px-space-md py-space-sm rounded-lg hover:bg-primary transition-all"
@@ -159,7 +168,7 @@ export function AssistantChat({ firstName, canUseTrainer }: { firstName: string;
         </ul>
       </aside>
 
-      <section aria-label="Assistant conversation" className="bg-surface-container-lowest rounded-2xl shadow-sm flex flex-col min-h-[70vh]">
+      <section aria-label="Assistant conversation" className="bg-surface-container-lowest rounded-2xl shadow-sm flex flex-col min-h-[70vh] min-w-0">
         <div className="p-space-md border-b border-outline-variant/40 flex flex-col md:flex-row md:items-end gap-space-sm">
           <div className="flex gap-space-xs flex-wrap" role="radiogroup" aria-label="Assistant">
             {kinds.map((k) => (
@@ -197,36 +206,36 @@ export function AssistantChat({ firstName, canUseTrainer }: { firstName: string;
           )}
         </div>
 
-        <div aria-live="polite" className="flex-1 overflow-y-auto p-space-md space-y-space-md">
+        <div aria-live="polite" className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-space-md space-y-space-md">
           {!started && (
             <div className="text-center py-space-xl max-w-lg mx-auto">
               <span aria-hidden="true" className="material-symbols-outlined text-[40px] text-primary">{current.icon}</span>
-              <p className="font-headline-sm text-headline-sm text-on-surface mt-space-sm">Habari {firstName}, how can I help?</p>
-              <p className="font-body-md text-body-md text-on-surface-variant mt-1">{current.hint} Ask in English or Kiswahili.</p>
+              <p className="font-headline-sm text-headline-sm text-on-surface mt-space-sm">Hello {firstName}, how can I help?</p>
+              <p className="font-body-md text-body-md text-on-surface-variant mt-1">{current.hint}</p>
             </div>
           )}
 
           {messages.map((m, i) =>
             m.role === "user" ? (
-              <div className="flex justify-end" key={i}>
-                <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary-container text-on-primary px-space-md py-space-sm font-body-md text-body-md whitespace-pre-wrap">
+              <div className="flex justify-end min-w-0" key={i}>
+                <div className="min-w-0 max-w-[min(100%,42rem)] rounded-2xl rounded-br-sm bg-primary-container text-on-primary px-space-md py-space-sm font-body-md text-body-md whitespace-pre-wrap [overflow-wrap:anywhere]">
                   {m.content}
                 </div>
               </div>
             ) : (
-              <div className="flex justify-start" key={i}>
-                <div className="max-w-[90%] rounded-2xl rounded-bl-sm bg-surface-container px-space-md py-space-sm">
+              <div className="flex justify-start min-w-0 w-full" key={i}>
+                <div className="min-w-0 w-full max-w-full overflow-hidden rounded-2xl rounded-bl-sm bg-surface-container px-space-md py-space-sm">
                   <div className="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant mb-1">
                     <span aria-hidden="true" className="material-symbols-outlined text-[16px]">smart_toy</span>
                     AI-generated
                     {m.grounded === false && <span> · not found in course material</span>}
                   </div>
-                  <div className="font-body-md text-body-md text-on-surface whitespace-pre-wrap">{m.content}</div>
+                  <MarkdownMessage content={m.content} />
                   {m.citations && m.citations.length > 0 && (
                     <ol className="mt-space-sm space-y-1 border-t border-outline-variant/40 pt-space-xs">
                       {m.citations.map((c) => (
                         <li className="font-body-sm text-body-sm" key={c.n}>
-                          <a className="text-primary hover:underline" href={c.url} rel="noopener noreferrer" target="_blank">
+                          <a className="text-primary hover:underline [overflow-wrap:anywhere]" href={c.url} rel="noopener noreferrer" target="_blank">
                             [{c.n}] {[c.course, c.title].filter(Boolean).join(" › ")}
                           </a>
                         </li>

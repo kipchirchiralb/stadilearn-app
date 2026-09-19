@@ -6,7 +6,7 @@ import { Field, FormAlert, inputClass, submitClass } from "@/components/forms/fi
 import { MOODLE_HOST } from "@/lib/site";
 import { OtpStep, requestOtp } from "./OtpStep";
 
-export function LoginForm() {
+export function LoginForm({ next }: { next?: string }) {
   const [email, setEmail] = useState("");
   const [step, setStep] = useState<"email" | "otp">("email");
   const [loading, setLoading] = useState(false);
@@ -27,7 +27,15 @@ export function LoginForm() {
   }
 
   if (step === "otp") {
-    return <OtpStep email={email} onBack={() => setStep("email")} onResend={() => requestOtp(email, "login")} />;
+    return (
+      <OtpStep
+        email={email}
+        purpose="login"
+        next={next}
+        onBack={() => setStep("email")}
+        onResend={() => requestOtp(email, "login")}
+      />
+    );
   }
 
   return (
@@ -57,7 +65,8 @@ export function LoginForm() {
         </span>
       </div>
       <FormAlert tone="info">
-        This signs you in to Stadilearn only. To study, sign in to Moodle separately at {MOODLE_HOST}.
+        This signs you in to Stadilearn only. To study, sign in to Moodle separately at {MOODLE_HOST}. Use the same
+        email on both sites so we can match your Moodle account.
       </FormAlert>
     </form>
   );

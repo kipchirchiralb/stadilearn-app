@@ -23,7 +23,6 @@ export default function AccessibilityPage() {
               <li>Plain language and simple navigation on small screens.</li>
               <li>Captions or transcripts for instructional video.</li>
               <li>No autoplaying video; low-data and downloadable options.</li>
-              <li>English and Kiswahili interface support.</li>
             </ul>
           ),
         },

@@ -55,7 +55,14 @@ export function SignupForm({ initialRole }: { initialRole?: string }) {
   }
 
   if (step === "otp") {
-    return <OtpStep email={email} onBack={() => setStep("details")} onResend={() => requestOtp(email, "signup")} />;
+    return (
+      <OtpStep
+        email={email}
+        purpose="signup"
+        onBack={() => setStep("details")}
+        onResend={() => requestOtp(email, "signup")}
+      />
+    );
   }
 
   const err = (k: string) => errors[k] && <span className="mt-1 block font-body-sm text-body-sm text-error">{errors[k]}</span>;
@@ -96,7 +103,14 @@ export function SignupForm({ initialRole }: { initialRole?: string }) {
         <input autoComplete="name" className={inputClass} name="fullName" required />
         {err("fullName")}
       </Field>
-      <Field label={role === "institution" ? "Work email address" : "Email address"}>
+      <Field
+        hint={
+          role === "learner"
+            ? "Use the same email as your Moodle account so we can show your course progress."
+            : "Use the same email you use in Moodle. We look that address up in Moodle (read-only) to find the courses you teach and your training progress."
+        }
+        label={role === "institution" ? "Work email address" : "Email address"}
+      >
         <input autoComplete="email" className={inputClass} name="email" onChange={(e) => setEmail(e.target.value)} required type="email" value={email} />
         {err("email")}
       </Field>
@@ -117,22 +131,14 @@ export function SignupForm({ initialRole }: { initialRole?: string }) {
         </Field>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
-        <Field label="County" optional>
-          <select className={inputClass} defaultValue="" name="county">
-            <option value="">Select county</option>
-            {KENYA_COUNTIES.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Preferred language">
-          <select className={inputClass} defaultValue="en" name="language">
-            <option value="en">English</option>
-            <option value="sw">Kiswahili</option>
-          </select>
-        </Field>
-      </div>
+      <Field label="County" optional>
+        <select className={inputClass} defaultValue="" name="county">
+          <option value="">Select county</option>
+          {KENYA_COUNTIES.map((c) => (
+            <option key={c}>{c}</option>
+          ))}
+        </select>
+      </Field>
 
       <div className="space-y-space-sm font-body-sm text-body-sm text-on-surface">
         <label className="flex items-start gap-space-sm">

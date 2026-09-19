@@ -1,5 +1,7 @@
-import { createHash, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
+import type { NextResponse } from "next/server";
+import { sha256 } from "@/lib/auth/hash";
 import { appDb } from "@/lib/db";
 
 /**
@@ -23,8 +25,6 @@ export type SessionUser = {
   adminOf: number[];
 };
 
-const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
-
 export async function createSession(userId: number, meta: { ip?: string; userAgent?: string } = {}) {
   const token = randomBytes(32).toString("base64url");
   const now = Date.now();
@@ -36,6 +36,35 @@ export async function createSession(userId: number, meta: { ip?: string; userAge
     [sha256(token), userId, idle, absolute, meta.ip ? sha256(meta.ip) : null, meta.userAgent?.slice(0, 255) ?? null],
   );
   return { token, expires: absolute };
+}
+
+export function applySessionCookie(res: NextResponse, token: string, expires: Date) {
+  res.cookies.set(SESSION_COOKIE, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    expires,
+  });
+}
+
+export function clearSessionCookie(res: NextResponse) {
+  res.cookies.set(SESSION_COOKIE, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    expires: new Date(0),
+  });
+}
+
+export async function revokeSessionCookie() {
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  if (!token) return;
+  await appDb.execute(
+    "UPDATE sessions SET revoked_at = UTC_TIMESTAMP(3) WHERE id = ? AND revoked_at IS NULL",
+    [sha256(token)],
+  );
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {

@@ -14,7 +14,7 @@
 --   institution admin  institution_members.member_role = 'admin': a teacher
 --                      nominated by the super admin for one institution, who
 --                      manages that institution's cohorts
---   super_admin        users.account_type; exactly one (enforced by a unique index)
+--   super_admin        users.account_type; at most 3 (enforced by triggers)
 --
 -- PII classification
 --   Tables marked [PII] hold personal data. The AI assistant's database user
@@ -72,22 +72,42 @@ CREATE TABLE users (
   -- Optional demographics, collected only with the 'demographics' consent.
   gender                 ENUM('female','male','other','prefer_not') NULL,
   age_band               ENUM('under_18','18_24','25_34','35_44','45_54','55_plus') NULL,
-  -- Verified link to the learner's Moodle account (Moodle stays authoritative).
+  -- Verified link to the person's Moodle account (Moodle stays authoritative).
+  -- Matched automatically when this email equals a confirmed mdl_user.email
+  -- (read-only Moodle lookup). Advise teachers and learners to use the same
+  -- address on both sites. Logins remain separate.
   moodle_user_id         BIGINT UNSIGNED  NULL,
   moodle_linked_at       DATETIME(3)      NULL,
   email_verified_at      DATETIME(3)      NULL,
   last_login_at          DATETIME(3)      NULL,
   created_at             DATETIME(3)      NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at             DATETIME(3)      NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-  -- Only one row may be super_admin: NULL for everyone else, 1 for that one.
-  super_admin_guard      TINYINT AS (IF(account_type = 'super_admin', 1, NULL)) STORED,
   PRIMARY KEY (id),
   UNIQUE KEY uq_users_email (email),
   UNIQUE KEY uq_users_moodle (moodle_user_id),
-  UNIQUE KEY uq_users_single_super_admin (super_admin_guard),
+  KEY ix_users_account_type (account_type),
   KEY ix_users_county (county_id),
   CONSTRAINT fk_users_county FOREIGN KEY (county_id) REFERENCES counties (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- At most 3 super admins, so there is a backup without admin rights spreading.
+-- Raise the number in both triggers to allow more.
+DELIMITER //
+CREATE TRIGGER trg_users_super_admin_cap_insert BEFORE INSERT ON users FOR EACH ROW
+BEGIN
+  IF NEW.account_type = 'super_admin'
+     AND (SELECT COUNT(*) FROM users WHERE account_type = 'super_admin') >= 3 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'At most 3 super admins are allowed';
+  END IF;
+END//
+CREATE TRIGGER trg_users_super_admin_cap_update BEFORE UPDATE ON users FOR EACH ROW
+BEGIN
+  IF NEW.account_type = 'super_admin' AND OLD.account_type <> 'super_admin'
+     AND (SELECT COUNT(*) FROM users WHERE account_type = 'super_admin') >= 3 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'At most 3 super admins are allowed';
+  END IF;
+END//
+DELIMITER ;
 
 -- [PII] Consent is recorded per purpose and version, never overwritten.
 CREATE TABLE user_consents (
@@ -313,7 +333,7 @@ CREATE TABLE rag_index_versions (
 -- section or course summary, or a public Stadilearn catalogue entry.
 CREATE TABLE rag_documents (
   id                  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  source_type         ENUM('moodle_course','moodle_section','moodle_page','moodle_label','moodle_book_chapter','moodle_lesson_page','site_course') NOT NULL,
+  source_type         ENUM('moodle_course','moodle_section','moodle_page','moodle_label','moodle_book_chapter','moodle_lesson_page','site_course','site_help') NOT NULL,
   source_key          VARCHAR(64)     NOT NULL,           -- stable key within the source, e.g. 'page:12'
   moodle_course_id    BIGINT UNSIGNED NULL,
   moodle_cm_id        BIGINT UNSIGNED NULL,               -- course module id, for deep links

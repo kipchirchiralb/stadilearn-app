@@ -51,4 +51,10 @@ GRANT SELECT ON moodle.mdl_cohort_members            TO 'moodle_ai_ro'@'localhos
 GRANT SELECT ON moodle.mdl_course_completions        TO 'moodle_ai_ro'@'localhost';
 GRANT SELECT ON moodle.mdl_course_modules_completion TO 'moodle_ai_ro'@'localhost';
 
+-- 4. The app's Moodle reporting user: SELECT on the whole Moodle database,
+--    including mdl_user (needed to match Stadilearn emails). No writes.
+--    Adjust the database name if Moodle's schema is not called 'moodle'.
+CREATE USER IF NOT EXISTS 'moodle_readonly'@'localhost' IDENTIFIED BY 'CHANGE_ME';
+GRANT SELECT ON moodle.* TO 'moodle_readonly'@'localhost';
+
 FLUSH PRIVILEGES;

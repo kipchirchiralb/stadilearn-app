@@ -70,7 +70,7 @@ export default function AboutPage() {
           <Card>
             <h3 className="font-headline-sm text-headline-sm text-on-surface mb-space-xs">Kenya context</h3>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Designed mobile-first for mid-range Android phones and 2G/3G connections, with English and Kiswahili support.
+              Designed mobile-first for mid-range Android phones and 2G/3G connections. The platform is in English.
             </p>
           </Card>
           <Card>

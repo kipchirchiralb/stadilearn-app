@@ -13,7 +13,7 @@ const TOPICS: { icon: string; title: string; items: { q: string; a: React.ReactN
     icon: "person_add",
     title: "Accounts and signing in",
     items: [
-      { q: "How do I create a Stadilearn account?", a: <>Go to <Link className="text-primary underline" href="/signup">Create account</Link>, enter your details and confirm your email with the one-time code we send.</> },
+      { q: "How do I create a Stadilearn account?", a: <>Go to <Link className="text-primary underline" href="/signup">Create account</Link>, enter your details and confirm your email with the one-time code we send. Teachers and learners should use the same email they use in Moodle so we can match the accounts.</> },
       { q: "I did not receive my one-time code", a: "Check spam or promotions folders and make sure the email address is correct. Codes expire after a few minutes; you can request a new one after a short wait." },
       { q: "How do I sign in?", a: <>Go to <Link className="text-primary underline" href="/login">Sign in</Link>, enter your email and type the code we send you.</> },
       { q: "I no longer have access to my email", a: <>Use <Link className="text-primary underline" href="/account-recovery">account recovery</Link> and our team will help verify your identity.</> },
@@ -24,6 +24,7 @@ const TOPICS: { icon: string; title: string; items: { q: string; a: React.ReactN
     title: "Stadilearn and Moodle",
     items: [
       { q: "Why are there two websites?", a: `Stadilearn handles your account, AI help, progress and certificates. Moodle at ${MOODLE_HOST} is where you study, take quizzes and submit work.` },
+      { q: "Should I use the same email for both?", a: "Yes. Stadilearn looks up your Moodle user by email (read-only) so teachers can see the courses they teach and everyone can see progress. Logins stay separate." },
       { q: "How do I open Moodle?", a: <>Use the “Open learning space” button in your dashboard, or go to <a className="text-primary underline" href={MOODLE_URL} rel="noopener noreferrer" target="_blank">{MOODLE_HOST}</a>. You sign in to Moodle separately.</> },
       { q: "I forgot my Moodle password or cannot see my course", a: "Use “Forgotten password” on the Moodle login page. If your course is missing, contact your trainer or our support team — enrolments are managed in Moodle." },
     ],
@@ -55,9 +56,8 @@ const TOPICS: { icon: string; title: string; items: { q: string; a: React.ReactN
   },
   {
     icon: "shield_person",
-    title: "Accessibility, language and privacy",
+    title: "Accessibility and privacy",
     items: [
-      { q: "Can I use Stadilearn in Kiswahili?", a: "Kiswahili is being added for learner navigation, key actions, help and the AI tutor." },
       { q: "How do I request my data or delete my account?", a: <>Use the <Link className="text-primary underline" href="/data-protection#request">data request form</Link>.</> },
       { q: "I have an accessibility problem", a: <>Tell us on the <Link className="text-primary underline" href="/accessibility">accessibility page</Link> and we will help.</> },
     ],

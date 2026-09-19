@@ -141,7 +141,7 @@ const TOOLS: Tool[] = [
     allowed: () => true,
     async run(user) {
       if (!user.moodleUserId) {
-        return { linked: false, message: "This Stadilearn account is not yet linked to a Moodle account, so progress is unavailable." };
+        return { linked: false, message: "This Stadilearn account is not yet matched to a Moodle user. Use the same email on Moodle and Stadilearn, then open the dashboard. Progress is unavailable until then." };
       }
       const uid = user.moodleUserId;
       const rows = await moodleAiDb.query<{

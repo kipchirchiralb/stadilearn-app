@@ -41,6 +41,9 @@ This app is the **main / custom platform**. It sits alongside a separately hoste
 - **Moodle delivers the training**, to individuals or to cohorts. Studying, authoring and grading happen there.
 - **The main platform only reads numbers from Moodle's database.** It never writes to Moodle tables. Changes to
   Moodle go through Moodle itself, its web services, or controlled imports.
+- **Accounts are matched by email.** Teachers and learners should use the same address on Stadilearn and Moodle.
+  After email confirmation, the app looks up that address in `mdl_user` (read-only) and stores `users.moodle_user_id`.
+  For teachers it then reads courses they teach, Moodle cohorts and groups. Logins stay separate.
 - **Separate logins at launch.** Signing in to Stadilearn does not sign you in to Moodle. Pages say this wherever
   they send users to Moodle.
 
@@ -67,8 +70,7 @@ Source specs (in the parent folder): `custom-platform-system-requirements.md`, `
 - **Tailwind CSS 3.4**, using the landing page's design tokens copied exactly (`tailwind.config.ts`)
 - Fonts: Inter, Plus Jakarta Sans and Material Symbols (Google Fonts)
 
-Planned for the next phase: MySQL/MariaDB for the custom database, a separate read-only pool for Moodle, server-side
-sessions, SMTP email, and a provider-neutral AI adapter (Gemini first).
+- **MySQL/MariaDB** for the custom database, a separate read-only pool for Moodle, server-side sessions, SMTP for OTP, and a provider-neutral AI adapter (Gemini first).
 
 ---
 
@@ -92,8 +94,9 @@ npm run dev                   # http://localhost:3000
 
 ### Environment variables
 
-See [`.env.example`](.env.example). Phase 1 only uses `NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_MOODLE_URL`. The
-database, session, SMTP and AI variables are placeholders for the next phase.
+See [`.env.example`](.env.example). Copy it to `.env.local` (or `.env`). Auth uses `CUSTOM_DB_*`,
+`SESSION_SECRET` and the `SMTP_*` / `MAIL_FROM` values. AI features also need `AI_*` and the Moodle read-only
+credentials.
 
 > ⚠️ Keep real credentials (database passwords, Moodle admin, SMTP, AI keys) in `.env.local` or a secret manager,
 > never in source control or plain text files in the repo. The Moodle credential used by this app must be a
@@ -123,7 +126,7 @@ app/
 │  │  │     data-protection/ safeguarding/ security/               # trust & legal
 │  │  ├─ (auth)/               # split-screen auth layout
 │  │  │  ├─ login/  signup/  account-recovery/
-│  │  └─ api/v1/               # versioned route handlers (stubs in Phase 1)
+│  │  └─ api/v1/               # versioned route handlers
 │  │     ├─ auth/otp/request   auth/otp/verify   auth/register
 │  │     ├─ certificates/verify
 │  │     └─ contact
@@ -195,17 +198,17 @@ The original landing page used `data-path` attributes. They map to routes in `sr
 
 ---
 
-## 6. API stubs (Phase 1)
+## 6. API routes (`/api/v1`)
 
-Route handlers live under `/api/v1`. Each one validates input. None of them stores anything yet.
+Auth is wired to the custom database and SMTP. Other handlers still validate input only.
 
-| Endpoint | Phase 1 behaviour | Next phase |
-| --- | --- | --- |
-| `POST /api/v1/auth/register` | Validates details. `202` with a generic message | Create pending account, record consent, send OTP |
-| `POST /api/v1/auth/otp/request` | `202` with the same response for any valid email (no enumeration) | Rate limit, hashed CSPRNG code, expiry, email |
-| `POST /api/v1/auth/otp/verify` | `501 Not Implemented`, shown in the UI | Verify hash, limit attempts, rotate session, set cookie |
-| `POST /api/v1/certificates/verify` | Always `not_found`. In development only, demo codes `SL-DEMO-VALID` and `SL-DEMO-REVOKED` show the other states | Look up certificate records in the custom DB |
-| `POST /api/v1/contact` | Validates. `202` with `stored: false` | Persist enquiry, queue email to the right team |
+| Endpoint | Behaviour |
+| --- | --- |
+| `POST /api/v1/auth/register` | Creates a pending account, records consent, emails a 6-digit OTP. Same `202` whether the email is new or not |
+| `POST /api/v1/auth/otp/request` | Rate-limits, stores a hashed CSPRNG code, emails it. Same `202` for any valid email (no enumeration) |
+| `POST /api/v1/auth/otp/verify` | Checks hash, expiry and attempts; activates pending users; sets the `sl_session` cookie |
+| `POST /api/v1/certificates/verify` | Always `not_found`. In development only, demo codes `SL-DEMO-VALID` and `SL-DEMO-REVOKED` show the other states |
+| `POST /api/v1/contact` | Validates. `202` with `stored: false` |
 
 > The contact form shows a success message but **does not save or send messages yet**. Connect storage and email
 > before this goes live.
@@ -219,10 +222,11 @@ Route handlers live under `/api/v1`. Each one validates input. None of them stor
 1. **Custom DB**: `mysql -u root -p < schema.sql` creates the `stadilearn` database (MariaDB 11.4+ / MySQL 8).
 2. **DB users**: edit the passwords (and Moodle's DB name/prefix) in `db-grants.sql`, then run it as a DBA. On
    cPanel/DirectAdmin hosting, create the same users and privileges in the control panel.
-3. **Env**: copy `.env.example` to `.env.local` and fill in the `CUSTOM_DB_*`, `MOODLE_DB_*` and `AI_*` values.
-4. **Index course content**: `npm run ai:index`. Rerun after content changes (for example nightly by cron). It
+3. **Super admins**: `mysql -u root -p stadilearn < adminseed.sql` creates the three Stadilearn admins.
+4. **Env**: copy `.env.example` to `.env.local` and fill in the `CUSTOM_DB_*`, `MOODLE_DB_*`, `SMTP_*`, `SESSION_SECRET` and `AI_*` values.
+5. **Index course content**: `npm run ai:index`. Rerun after content changes (for example nightly by cron). It
    only embeds new or changed documents and withdraws anything hidden or deleted in Moodle.
-5. **Try it before OTP sign-in exists**: `npm run dev:session -- you@example.com --type teacher`, add the printed
+6. **Optional, skip email during development**: `npm run dev:session -- you@example.com --type teacher`, add the printed
    `sl_session` cookie in the browser, and open `/app/assistant`.
 
 ### Roles in the schema
@@ -231,7 +235,7 @@ Route handlers live under `/api/v1`. Each one validates input. None of them stor
 | --- | --- |
 | Learner, Teacher | `users.account_type` (self-signup) |
 | Institution admin | `institution_members.member_role = 'admin'`: a teacher nominated by the super admin |
-| Super admin | `users.account_type = 'super_admin'`: the database allows only one |
+| Super admin | `users.account_type = 'super_admin'`: at most 3, enforced by triggers. Seeded by `adminseed.sql` |
 
 ### How the assistant reaches data
 
@@ -280,15 +284,13 @@ Route handlers live under `/api/v1`. Each one validates input. None of them stor
 - Metrics (5,000+, 94%, 1450+) and testimonials: they must be verified and consented before launch.
 - The footer link "Offline Sync Toolkit": the page itself explains that offline support is download-based only.
 - The header has no mobile menu (`hidden lg:flex`). On phones, navigation relies on the footer links.
-- The EN/Kiswahili switch is visual only. i18n (string externalisation) is still to do.
 - Hero images load from `lh3.googleusercontent.com`. Replace them with owned, consented photography in `public/`.
 
 **Not yet built (next phase):**
 
-1. Wire signup/login/OTP routes to the DB (tables exist: `users`, `otp_codes`, `sessions`, `user_consents`).
-2. Admin screens: institution approval, nominating institution admins, cohort management, AI flag review queue,
+1. Admin screens: institution approval, nominating institution admins, cohort management, AI flag review queue,
    support tickets, quotas.
-3. Dashboards under `/app/*` for learners, teachers, institution admins and the super admin.
-4. Moodle account linking (`users.moodle_user_id`) and scheduled `npm run ai:index`.
-5. Certificate issuance, email notifications, CSV/PDF exports.
-7. Kiswahili translations, analytics with consent, automated tests (unit, e2e, accessibility).
+2. Dashboards under `/app/*` for learners, teachers, institution admins and the super admin (a signed-in shell exists).
+3. Scheduled `npm run ai:index` for the RAG corpus.
+4. Certificate issuance, email notifications (other than OTP), CSV/PDF exports.
+5. Analytics with consent, automated tests (unit, e2e, accessibility).

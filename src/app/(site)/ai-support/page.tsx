@@ -1,19 +1,25 @@
 import type { Metadata } from "next";
 import { AiDisclosureNotice, CheckList, CtaBand, FeatureGrid, PageHero, Section, SectionHeader } from "@/components/ui";
+import { getSessionUser } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: "AI Learning Support",
   description: "How Stadilearn's AI tutor, practice, support and trainer assistants work, and the guardrails that keep learning honest.",
 };
 
-export default function AiSupportPage() {
+export default async function AiSupportPage() {
+  const user = await getSessionUser();
+  const assistantCta = user
+    ? { href: "/app/assistant", label: "Open the assistant" }
+    : { href: "/login?next=/app/assistant", label: "Sign in to try the assistant" };
+
   return (
     <>
       <PageHero
         eyebrow="AI learning support"
         highlight="without losing the learning."
         intro="Stadilearn's AI assistants explain, hint and guide, using approved course material. They are there to support your thinking and your teacher, not to replace either."
-        primary={{ href: "/login?next=/app/assistant", label: "Sign in to try the assistant" }}
+        primary={assistantCta}
         secondary={{ href: "/ai-transparency", label: "Read AI transparency" }}
         title="Get help"
       />
@@ -44,10 +50,10 @@ export default function AiSupportPage() {
             />
           </div>
           <div>
-            <SectionHeader align="left" eyebrow="Language and availability" title="Know the limits" />
+            <SectionHeader align="left" eyebrow="Availability" title="Know the limits" />
             <CheckList
               items={[
-                { title: "English and Kiswahili", body: "Ask in either language, or mix them. Kiswahili quality depends on the model and content available." },
+                { title: "English throughout", body: "Stadilearn and the assistant are in English. Course material in Moodle is also presented in English." },
                 { title: "Usage limits apply", body: "Daily limits per user and programme keep the service fair and affordable." },
                 { title: "Service may be unavailable", body: "If AI is paused or quotas run out, your Moodle courses still work as normal." },
                 { title: "Your conversations", body: "We configure providers not to train on learner conversations where that control is available." },
@@ -60,10 +66,14 @@ export default function AiSupportPage() {
         </div>
       </Section>
       <CtaBand
-        body="Sign in to your Stadilearn account to open the assistant from your dashboard."
+        body={
+          user
+            ? "Open the assistant from here, or from your dashboard."
+            : "Sign in to your Stadilearn account to open the assistant from your dashboard."
+        }
         icon="smart_toy"
-        primary={{ href: "/login?next=/app/assistant", label: "Sign in to try the assistant" }}
-        secondary={{ href: "/signup", label: "Create account" }}
+        primary={assistantCta}
+        secondary={user ? undefined : { href: "/signup", label: "Create account" }}
         title="See how AI support works for you."
       />
     </>

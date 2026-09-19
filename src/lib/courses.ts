@@ -40,11 +40,11 @@ export const COURSES: Course[] = [
     level: "Beginner",
     duration: "4 Weeks",
     topic: "AI literacy",
-    languages: ["English", "Kiswahili"],
+    languages: ["English"],
     delivery: "Self-paced or cohort",
     certificate: true,
     availability: "Open",
-    tags: ["EN + Kiswahili", "Low Data"],
+    tags: ["Low Data"],
     audience:
       "Anyone who wants to use AI tools confidently at work or in daily life. No technical background needed.",
     outcomes: [
@@ -64,7 +64,6 @@ export const COURSES: Course[] = [
     assessment: "Short quizzes per module and one practical task, completed in Moodle.",
     faq: [
       { q: "Do I need to pay for an AI tool?", a: "No. Activities use free tools where possible, and alternatives are suggested when a tool is unavailable." },
-      { q: "Can I study in Kiswahili?", a: "Key learner content and navigation are being prepared in Kiswahili. Availability is shown on each module." },
     ],
   },
   {
@@ -108,7 +107,7 @@ export const COURSES: Course[] = [
     level: "All Levels",
     duration: "2 Weeks",
     topic: "Digital skills",
-    languages: ["English", "Kiswahili"],
+    languages: ["English"],
     delivery: "Self-paced",
     certificate: true,
     availability: "Open",
@@ -207,11 +206,11 @@ export const COURSES: Course[] = [
     level: "Beginner",
     duration: "2 Weeks",
     topic: "AI literacy",
-    languages: ["English", "Kiswahili"],
+    languages: ["English"],
     delivery: "Self-paced",
     certificate: true,
     availability: "Open",
-    tags: ["EN + Kiswahili", "No Experience Needed"],
+    tags: ["No Experience Needed"],
     audience: "Anyone new to AI, including students, parents, professionals, and community leaders.",
     outcomes: [
       "Explain what AI is, how it learns from data, and its main types.",

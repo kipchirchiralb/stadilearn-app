@@ -79,7 +79,7 @@ export default function TeachersPage() {
         <SectionHeader eyebrow="Getting started" title="Your path as a trainer" />
         <Steps
           steps={[
-            { title: "Create your account", body: "Sign up as a teacher or trainer and verify your email." },
+            { title: "Create your account", body: "Sign up as a teacher or trainer with the same email you use in Moodle, then verify it." },
             { title: "Join the training track", body: "Complete the teacher training pathway in Moodle." },
             { title: "Get assigned cohorts", body: "Your programme administrator assigns you to cohorts." },
             { title: "Teach and track", body: "Teach in Moodle; follow progress and use AI drafts in Stadilearn.", accent: true },

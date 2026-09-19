@@ -30,7 +30,7 @@ export default function HowItWorksPage() {
           steps={[
             {
               title: "Create your Stadilearn account",
-              body: "Verify your email with a one-time code. Stadilearn and Moodle accounts are separate at launch.",
+              body: "Verify your email with a one-time code. Use the same email as Moodle so we can match your accounts. Logins stay separate.",
               tag: "Stadilearn",
             },
             { title: "Find your learning pathway", body: "Browse available courses or join through your institution.", tag: "Stadilearn" },
@@ -98,7 +98,7 @@ export default function HowItWorksPage() {
         <Faq
           items={[
             { q: "Why are there two websites?", a: "Moodle is a proven learning system for lessons, assessments and grading. Stadilearn adds what Moodle does not: AI assistance, progress summaries, certificates, and reporting for institutions and partners." },
-            { q: "Do I need two accounts?", a: "Yes, at launch. Your Stadilearn account and your Moodle account are separate, and signing in to one does not sign you in to the other." },
+            { q: "Do I need two accounts?", a: "Yes. Your Stadilearn account and your Moodle account are separate, and signing in to one does not sign you in to the other. Use the same email on both so Stadilearn can match you and show progress or teaching data." },
             { q: "Where do I study?", a: `In Moodle at ${MOODLE_HOST}. Stadilearn links you to the right course or activity.` },
             { q: "Where do I see progress?", a: "In your Stadilearn dashboard. Progress is read from Moodle and shows when it was last updated." },
             { q: "What happens if I forget my Moodle password?", a: "Use the “Forgotten password” link on the Moodle login page. Stadilearn cannot reset Moodle passwords. Stadilearn itself signs you in with an emailed one-time code." },

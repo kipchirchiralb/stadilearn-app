@@ -1,6 +1,6 @@
 /**
  * DEVELOPMENT ONLY: create (or reuse) an active account and print a session
- * cookie, so the assistant can be tried before OTP sign-in is wired up.
+ * cookie, so the assistant can be tried without going through emailed OTP.
  *
  *   npm run dev:session -- you@example.com
  *   npm run dev:session -- teacher@example.com --type teacher --moodle-user-id 5

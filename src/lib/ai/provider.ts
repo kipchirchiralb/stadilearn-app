@@ -64,7 +64,7 @@ class GeminiProvider implements AiProvider {
     readonly embedDimensions: number,
   ) {}
 
-  private async call<T>(path: string, body: unknown): Promise<T> {
+  private async call<T>(path: string, body: unknown, attempt = 0): Promise<T> {
     const res = await fetch(`${GEMINI_BASE}/${path}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": this.apiKey },
@@ -73,7 +73,12 @@ class GeminiProvider implements AiProvider {
     });
     if (!res.ok) {
       const detail = (await res.text()).slice(0, 300);
-      if (res.status === 429) throw new AiProviderError("AI provider quota or rate limit reached", "rate_limited");
+      const retryable = res.status === 429 || res.status === 503;
+      if (retryable && attempt < 3) {
+        await new Promise((r) => setTimeout(r, 600 * 2 ** attempt));
+        return this.call<T>(path, body, attempt + 1);
+      }
+      if (retryable) throw new AiProviderError("AI provider quota or rate limit reached", "rate_limited");
       throw new AiProviderError(`Gemini ${res.status}: ${detail}`, "provider_error");
     }
     return (await res.json()) as T;
@@ -97,11 +102,44 @@ class GeminiProvider implements AiProvider {
       }
     });
 
+    const models = uniqueModels([
+      this.chatModel,
+      process.env.AI_MODEL_FALLBACK,
+      "gemini-2.5-flash",
+      "gemini-3.5-flash",
+    ]);
+    let lastError: unknown;
+    for (const model of models) {
+      try {
+        return await this.generate(model, { system, contents, tools, temperature });
+      } catch (err) {
+        lastError = err;
+        if (!(err instanceof AiProviderError) || (err.code !== "rate_limited" && err.code !== "provider_error")) throw err;
+        console.warn(`[ai] Gemini model ${model} failed (${err.code}); trying fallback if any`);
+      }
+    }
+    throw lastError;
+  }
+
+  private async generate(
+    model: string,
+    {
+      system,
+      contents,
+      tools,
+      temperature,
+    }: {
+      system: string;
+      contents: GeminiContent[];
+      tools?: ToolDef[];
+      temperature: number;
+    },
+  ): Promise<ChatResult> {
     const data = await this.call<{
       candidates?: { content?: GeminiContent; finishReason?: string }[];
       promptFeedback?: { blockReason?: string };
       usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
-    }>(`models/${this.chatModel}:generateContent`, {
+    }>(`models/${model}:generateContent`, {
       systemInstruction: { parts: [{ text: system }] },
       contents,
       tools: tools?.length ? [{ functionDeclarations: tools }] : undefined,
@@ -177,6 +215,15 @@ export function estimateCost(inputTokens: number, outputTokens: number) {
 }
 
 let cached: AiProvider | undefined;
+
+function uniqueModels(names: (string | undefined)[]) {
+  const out: string[] = [];
+  for (const name of names) {
+    const trimmed = name?.trim();
+    if (trimmed && !out.includes(trimmed)) out.push(trimmed);
+  }
+  return out;
+}
 
 export function getProvider(): AiProvider {
   if (cached) return cached;

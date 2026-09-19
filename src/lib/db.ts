@@ -1,4 +1,4 @@
-import mysql, { type Pool, type PoolOptions, type RowDataPacket } from "mysql2/promise";
+import mysql, { type Pool, type PoolConnection, type PoolOptions, type RowDataPacket } from "mysql2/promise";
 
 /**
  * Database pools. Server-side only.
@@ -54,8 +54,26 @@ type Scalar = string | number | bigint | boolean | Date | Buffer | null;
 /** Arrays expand for `IN (?)`. */
 type Params = (Scalar | Scalar[])[];
 
+export type DbTx = {
+  query<T = Row>(sql: string, params?: Params): Promise<T[]>;
+  execute(sql: string, params?: Params): Promise<mysql.ResultSetHeader>;
+};
+
+function executor(conn: PoolConnection): DbTx {
+  return {
+    async query<T = Row>(sql: string, params: Params = []) {
+      const [rows] = await conn.query<Row[]>(sql, params);
+      return rows as T[];
+    },
+    async execute(sql: string, params: Params = []) {
+      const [result] = await conn.query<mysql.ResultSetHeader>(sql, params);
+      return result;
+    },
+  };
+}
+
 /** Read/write access to the custom database. */
-export const appDb = {
+export const appDb: DbTx & { transaction<T>(fn: (tx: DbTx) => Promise<T>): Promise<T> } = {
   async query<T = Row>(sql: string, params: Params = []) {
     const [rows] = await appPool().query<Row[]>(sql, params);
     return rows as T[];
@@ -63,6 +81,24 @@ export const appDb = {
   async execute(sql: string, params: Params = []) {
     const [result] = await appPool().query<mysql.ResultSetHeader>(sql, params);
     return result;
+  },
+  async transaction<T>(fn: (tx: DbTx) => Promise<T>): Promise<T> {
+    const conn = await appPool().getConnection();
+    try {
+      await conn.beginTransaction();
+      const out = await fn(executor(conn));
+      await conn.commit();
+      return out;
+    } catch (err) {
+      try {
+        await conn.rollback();
+      } catch {
+        /* connection may already be closed */
+      }
+      throw err;
+    } finally {
+      conn.release();
+    }
   },
 };
 

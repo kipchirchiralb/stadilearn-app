@@ -5,7 +5,19 @@ import { FormAlert, inputClass, submitClass } from "@/components/forms/fields";
 
 const RESEND_SECONDS = 60;
 
-export function OtpStep({ email, onBack, onResend }: { email: string; onBack: () => void; onResend: () => Promise<void> }) {
+export function OtpStep({
+  email,
+  purpose,
+  next,
+  onBack,
+  onResend,
+}: {
+  email: string;
+  purpose: "login" | "signup" | "recovery";
+  next?: string;
+  onBack: () => void;
+  onResend: () => Promise<void>;
+}) {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -26,7 +38,7 @@ export function OtpStep({ email, onBack, onResend }: { email: string; onBack: ()
       const res = await fetch("/api/v1/auth/otp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email, code, purpose, next }),
       });
       const data = await res.json();
       if (!res.ok) setError(data.error ?? "That code did not work. Try again.");

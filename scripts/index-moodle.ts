@@ -16,6 +16,7 @@
 import { createHash } from "node:crypto";
 import { COURSES } from "@/lib/courses";
 import { appDb, closePools, moodleAiDb, mt } from "@/lib/db";
+import { PLATFORM_HELP_DOCS } from "@/lib/ai/platform-knowledge";
 import { AiProviderError, estimateTokens, getProvider, vectorToBlob, type AiProvider } from "@/lib/ai/provider";
 import { recordUsage } from "@/lib/ai/quota";
 import { MOODLE_URL } from "@/lib/site";
@@ -26,7 +27,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://stadilearn.co.ke";
 const full = process.argv.includes("--full");
 
 type SourceDoc = {
-  sourceType: "moodle_course" | "moodle_section" | "moodle_page" | "moodle_label" | "moodle_book_chapter" | "moodle_lesson_page" | "site_course";
+  sourceType: "moodle_course" | "moodle_section" | "moodle_page" | "moodle_label" | "moodle_book_chapter" | "moodle_lesson_page" | "site_course" | "site_help";
   sourceKey: string;
   moodleCourseId: number | null;
   moodleCmId: number | null;
@@ -200,6 +201,22 @@ function readSiteCatalogue(): SourceDoc[] {
   }));
 }
 
+function readSiteHelp(): SourceDoc[] {
+  return PLATFORM_HELP_DOCS.map((d) => ({
+    sourceType: "site_help",
+    sourceKey: `help:${d.key}`,
+    moodleCourseId: null,
+    moodleCmId: null,
+    courseTitle: "Stadilearn help",
+    sectionTitle: null,
+    title: d.title,
+    language: "en",
+    url: d.url.startsWith("http") ? d.url : `${SITE_URL}${d.url}`,
+    modifiedAt: null,
+    text: d.text,
+  }));
+}
+
 // ---------------------------------------------------------------------------
 // 2. Index versions
 // ---------------------------------------------------------------------------
@@ -245,7 +262,13 @@ async function main() {
 
   try {
     const version = await targetVersion(provider);
-    const docs = [...(await readMoodle()), ...readSiteCatalogue()].filter((d) => d.text.trim().length >= 20);
+    let moodleDocs: SourceDoc[] = [];
+    try {
+      moodleDocs = await readMoodle();
+    } catch (err) {
+      console.error("Moodle read failed; indexing site content only.", err);
+    }
+    const docs = [...moodleDocs, ...readSiteCatalogue(), ...readSiteHelp()].filter((d) => d.text.trim().length >= 20);
     read = docs.length;
     console.log(`Read ${docs.length} documents with content`);
 

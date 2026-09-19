@@ -18,7 +18,7 @@ export default function PrivacyPage() {
           title: "Data we collect and why",
           body: (
             <ul>
-              <li><strong>Account data</strong> (name, email, role, language) to create and secure your account — contract.</li>
+              <li><strong>Account data</strong> (name, email, role) to create and secure your account — contract.</li>
               <li><strong>Institution and cohort links</strong> to show the right dashboards and reports — contract or legitimate interest of your institution.</li>
               <li><strong>Learning records read from Moodle</strong> (enrolment, completion, grades) to show progress and issue certificates — contract.</li>
               <li><strong>Optional demographics</strong> (county, gender, age band) for disaggregated programme reporting — consent, which you can withdraw.</li>

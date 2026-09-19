@@ -18,7 +18,6 @@ export default function CookiesPage() {
             <ul>
               <li><strong>Session cookie</strong> — keeps you signed in. Secure, HttpOnly, limited to stadilearn.co.ke and expires after inactivity.</li>
               <li><strong>Security cookie</strong> — protects forms against cross-site request forgery.</li>
-              <li><strong>Preference cookie</strong> — remembers your language choice.</li>
             </ul>
           ),
         },

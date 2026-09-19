@@ -61,7 +61,7 @@ const FEATURED = [
     duration: "4 Weeks",
     title: "Foundations of Practical AI & Everyday Work",
     body: "Learn prompt design, smart search, and workplace automation applied to Kenyan administrative tasks.",
-    tags: ["EN + Kiswahili", "Low Data"],
+    tags: ["Low Data"],
   },
   {
     slug: "ai-for-classroom-teachers",
@@ -112,7 +112,7 @@ const WHY = [
 ];
 
 const AI_POINTS = [
-  { icon: "translate", title: "Bilingual Guidance", body: "Ask questions in English or everyday Kiswahili. Receive contextual examples tailored to local realities." },
+  { icon: "translate", title: "Plain English, Kenyan context", body: "Ask questions in English. Receive examples tailored to Kenyan classrooms, workplaces and everyday life." },
   { icon: "menu_book", title: "Curriculum Grounded", body: "Every answer references specific lesson readings and Moodle resources — avoiding hallucinations." },
   { icon: "shield", title: "Anti-Cheating Safeguards", body: "Offers progressive hints and troubleshooting steps. Never provides direct copy-paste solutions." },
   { icon: "support_agent", title: "Trainer Escalation", body: "Stuck? Seamlessly flag complex roadblocks for human instructor feedback during weekly live office hours." },

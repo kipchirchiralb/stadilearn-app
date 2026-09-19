@@ -24,7 +24,7 @@ export type RetrievedChunk = {
   score: number;
 };
 
-type IndexEntry = { chunkId: number; courseId: number | null; vec: Float32Array };
+type IndexEntry = { chunkId: number; courseId: number | null; sourceType: string; vec: Float32Array };
 type IndexCache = { versionId: number; loadedAt: number; entries: IndexEntry[] };
 
 const REFRESH_MS = 5 * 60_000;
@@ -35,8 +35,8 @@ async function loadIndex(): Promise<IndexCache | null> {
     "SELECT id FROM rag_index_versions WHERE status = 'active' ORDER BY activated_at DESC LIMIT 1",
   );
   if (!version) return null;
-  const rows = await aiDb.query<{ chunk_id: number; moodle_course_id: number | null; embedding: Buffer }>(
-    "SELECT chunk_id, moodle_course_id, embedding FROM ai_v_rag_chunks WHERE index_version_id = ?",
+  const rows = await aiDb.query<{ chunk_id: number; moodle_course_id: number | null; source_type: string; embedding: Buffer }>(
+    "SELECT chunk_id, moodle_course_id, source_type, embedding FROM ai_v_rag_chunks WHERE index_version_id = ?",
     [version.id],
   );
   return {
@@ -45,6 +45,7 @@ async function loadIndex(): Promise<IndexCache | null> {
     entries: rows.map((r) => ({
       chunkId: Number(r.chunk_id),
       courseId: r.moodle_course_id === null ? null : Number(r.moodle_course_id),
+      sourceType: r.source_type,
       vec: blobToVector(r.embedding),
     })),
   };
@@ -66,7 +67,7 @@ export function invalidateRagCache() {
 export async function retrieve(
   provider: AiProvider,
   query: string,
-  opts: { courseId?: number | null; k?: number; minScore?: number } = {},
+  opts: { courseId?: number | null; k?: number; minScore?: number; scope?: "course" | "platform" | "all" } = {},
 ): Promise<{ chunks: RetrievedChunk[]; indexVersionId: number | null; embedTokens: number }> {
   const index = await getIndex();
   if (!index || index.entries.length === 0) return { chunks: [], indexVersionId: null, embedTokens: 0 };
@@ -79,8 +80,11 @@ export async function retrieve(
 
   const k = opts.k ?? 6;
   const minScore = opts.minScore ?? 0.55;
+  const scope = opts.scope ?? "all";
   const scored: { chunkId: number; score: number }[] = [];
   for (const e of index.entries) {
+    if (scope === "platform" && !e.sourceType.startsWith("site_")) continue;
+    if (scope === "course" && e.sourceType === "site_help") continue;
     // Course-scoped tutor: that course's content plus general (non-course) material.
     if (opts.courseId && e.courseId !== null && e.courseId !== opts.courseId) continue;
     let dot = 0;
