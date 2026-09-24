@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Field, FormAlert, inputClass, submitClass } from "@/components/forms/fields";
 import { KENYA_COUNTIES } from "@/lib/counties";
-import type { SignupRole } from "@/lib/validation";
+import { INSTITUTION_TYPE_LABELS, INSTITUTION_TYPES, type SignupRole } from "@/lib/validation";
 import { OtpStep, requestOtp } from "./OtpStep";
 
 const ROLE_OPTIONS: { value: SignupRole; icon: string; title: string; body: string }[] = [
@@ -126,9 +126,20 @@ export function SignupForm({ initialRole }: { initialRole?: string }) {
         </Field>
       )}
       {role === "institution" && (
-        <Field label="Your role" optional>
-          <input className={inputClass} name="jobTitle" placeholder="e.g. Programme coordinator" />
-        </Field>
+        <>
+          <Field hint="Used only to describe the organisation. Access still waits for Stadilearn verification." label="Organisation type">
+            <select className={inputClass} defaultValue="other" name="institutionType">
+              {INSTITUTION_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {INSTITUTION_TYPE_LABELS[type]}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Your role" optional>
+            <input className={inputClass} name="jobTitle" placeholder="e.g. Programme coordinator" />
+          </Field>
+        </>
       )}
 
       <Field label="County" optional>

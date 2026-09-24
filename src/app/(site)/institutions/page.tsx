@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Card, CheckList, CtaBand, FeatureGrid, Icon, Notice, PageHero, Section, SectionHeader, Steps } from "@/components/ui";
+import { getSessionUser } from "@/lib/auth/session";
+import { listInstitutionAffiliations, wantsInstitutionDashboard } from "@/lib/institutions";
 
 export const metadata: Metadata = {
   title: "For Institutions",
@@ -7,7 +9,15 @@ export const metadata: Metadata = {
     "Deliver digital and AI learning programmes through Moodle and see cohort participation, completion and certification in institution-scoped Stadilearn dashboards.",
 };
 
-export default function InstitutionsPage() {
+export default async function InstitutionsPage() {
+  const user = await getSessionUser();
+  const affiliations = user ? await listInstitutionAffiliations(user.id) : [];
+  const orgAccount = Boolean(user && wantsInstitutionDashboard(affiliations));
+  const dashboardCta = { href: "/app/dashboard", label: "Open institution dashboard" };
+  const signupCta = { href: "/signup?role=institution", label: "Create institution account" };
+  const signInCta = { href: "/login?next=/app/dashboard", label: "Sign in" };
+  const primary = user ? dashboardCta : { href: "/contact?type=institution", label: "Request a programme conversation" };
+
   return (
     <>
       <PageHero
@@ -37,7 +47,7 @@ export default function InstitutionsPage() {
         eyebrow="For institutions & organisations"
         highlight="into visible progress."
         intro="Schools, TVETs, NGOs, county programmes and training organisations deliver courses to their cohorts in Moodle. A Stadilearn institution account then gives you the summaries: participation, completion, learner reports and certification."
-        primary={{ href: "/contact?type=institution", label: "Request a programme conversation" }}
+        primary={primary}
         secondary={{ href: "#reporting", label: "View reporting capabilities" }}
         title="Turn a learning programme"
       />
@@ -75,16 +85,25 @@ export default function InstitutionsPage() {
           <Card>
             <h3 className="font-headline-sm text-headline-sm text-on-surface mb-space-sm">Institution accounts</h3>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              Institution and partner staff create a Stadilearn account, then Stadilearn links it to your institution
-              after verification. Until access is approved, your dashboard shows no learner data.
+              {orgAccount
+                ? "You already have an institution account. Until Stadilearn verifies the organisation and nominates you as admin, the dashboard shows no learner data."
+                : "Institution and partner staff create a Stadilearn account, then Stadilearn links it to your institution after verification. Until access is approved, your dashboard shows no learner data."}
             </p>
             <div className="mt-space-md flex flex-wrap gap-space-sm">
-              <a className="inline-flex items-center gap-space-xs bg-primary-container text-on-primary font-label-md text-label-md px-space-lg py-space-sm rounded-lg hover:bg-primary transition-all" href="/signup?role=institution">
-                Create institution account
-              </a>
-              <a className="inline-flex items-center gap-space-xs font-label-md text-label-md text-primary font-bold px-space-sm py-space-sm hover:text-secondary-container" href="/login">
-                Sign in
-              </a>
+              {user ? (
+                <a className="inline-flex items-center gap-space-xs bg-primary-container text-on-primary font-label-md text-label-md px-space-lg py-space-sm rounded-lg hover:bg-primary transition-all" href="/app/dashboard">
+                  {orgAccount ? "Open institution dashboard" : "Open dashboard"}
+                </a>
+              ) : (
+                <>
+                  <a className="inline-flex items-center gap-space-xs bg-primary-container text-on-primary font-label-md text-label-md px-space-lg py-space-sm rounded-lg hover:bg-primary transition-all" href={signupCta.href}>
+                    {signupCta.label}
+                  </a>
+                  <a className="inline-flex items-center gap-space-xs font-label-md text-label-md text-primary font-bold px-space-sm py-space-sm hover:text-secondary-container" href={signInCta.href}>
+                    {signInCta.label}
+                  </a>
+                </>
+              )}
             </div>
           </Card>
         </div>
@@ -108,11 +127,17 @@ export default function InstitutionsPage() {
         </div>
       </Section>
       <CtaBand
-        body="Tell us about your learners, goals and timelines. We will follow up to plan a programme that fits."
+        body={
+          user
+            ? orgAccount
+              ? "Open your dashboard to see verification status, or contact Stadilearn if you are waiting on approval."
+              : "Tell us about your learners, goals and timelines. We will follow up to plan a programme that fits."
+            : "Tell us about your learners, goals and timelines. We will follow up to plan a programme that fits."
+        }
         icon="domain"
-        primary={{ href: "/contact?type=institution", label: "Request a programme conversation" }}
-        secondary={{ href: "/impact", label: "View impact" }}
-        title="Talk to Stadilearn."
+        primary={user ? dashboardCta : { href: "/contact?type=institution", label: "Request a programme conversation" }}
+        secondary={user ? { href: "/contact?type=institution", label: "Contact Stadilearn" } : { href: "/impact", label: "View impact" }}
+        title={user ? "Continue with your institution account." : "Talk to Stadilearn."}
       />
     </>
   );

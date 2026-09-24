@@ -2,6 +2,7 @@ import { effectiveRole, type SessionUser } from "@/lib/auth/session";
 import { COURSES } from "@/lib/courses";
 import { aiDb, moodleAiDb, mt } from "@/lib/db";
 import { MOODLE_URL } from "@/lib/site";
+import { canSeeInstitution } from "@/lib/institutions";
 import { htmlToText } from "@/lib/text";
 import type { ToolDef } from "./provider";
 
@@ -219,7 +220,7 @@ const TOOLS: Tool[] = [
       const requested = idArg(args, "institution_id");
       const institutionId = requested ?? user.adminOf[0];
       if (!institutionId) return { error: "Specify an institution_id." };
-      if (user.accountType !== "super_admin" && !user.adminOf.includes(institutionId)) {
+      if (!canSeeInstitution(user, institutionId)) {
         return { error: "You do not administer that institution." };
       }
       const [inst] = await aiDb.query<{ name: string; type: string; county: string | null; status: string }>(

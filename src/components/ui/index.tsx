@@ -24,7 +24,7 @@ export function Eyebrow({ children, icon }: { children: React.ReactNode; icon?: 
   );
 }
 
-type Cta = { href: string; label: string; icon?: string; external?: boolean };
+type Cta = { href: string; label: string; icon?: string; external?: boolean; download?: boolean };
 
 export function ButtonLink({ cta, variant = "primary" }: { cta: Cta; variant?: "primary" | "secondary" | "accent" | "text" }) {
   const styles = {
@@ -36,16 +36,23 @@ export function ButtonLink({ cta, variant = "primary" }: { cta: Cta; variant?: "
       "inline-flex items-center gap-space-xs bg-surface-container-lowest text-primary font-label-lg text-label-lg px-space-lg py-space-sm rounded-lg shadow-sm hover:bg-surface-container-high transition-colors",
     text: "inline-flex items-center gap-space-xs font-label-md text-label-md text-primary font-bold hover:text-secondary-container transition-colors py-space-sm",
   }[variant];
-  const icon = cta.icon ?? (cta.external ? "open_in_new" : variant === "secondary" ? undefined : "arrow_forward");
+  const icon =
+    cta.icon ?? (cta.external ? "open_in_new" : cta.download ? "download" : variant === "secondary" ? undefined : "arrow_forward");
   const content = (
     <>
       <span>{cta.label}</span>
       {icon && <Icon className="text-[18px]" name={icon} />}
     </>
   );
-  if (cta.external) {
+  if (cta.external || cta.download) {
     return (
-      <a className={styles} href={cta.href} rel="noopener noreferrer" target="_blank">
+      <a
+        className={styles}
+        download={cta.download ? true : undefined}
+        href={cta.href}
+        rel={cta.external ? "noopener noreferrer" : undefined}
+        target={cta.external ? "_blank" : undefined}
+      >
         {content}
       </a>
     );

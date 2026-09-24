@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ButtonLink, Section } from "@/components/ui";
 import { SESSION_COOKIE, getSessionUser, revokeSessionCookie } from "@/lib/auth/session";
 import { appDb } from "@/lib/db";
+import { listInstitutionAffiliations, wantsInstitutionDashboard } from "@/lib/institutions";
 import { ensureMoodleLinked } from "@/lib/moodle/identity";
 import { MOODLE_HOST, MOODLE_URL } from "@/lib/site";
 
@@ -53,8 +54,14 @@ export default async function ProfilePage() {
   );
   if (!row) redirect("/login?next=/app/profile");
 
-  const role =
-    session.adminOf.length && row.account_type === "teacher"
+  const affiliations = await listInstitutionAffiliations(session.id);
+  const orgAccount = wantsInstitutionDashboard(affiliations);
+  const approvedOrg = affiliations.some((a) => a.access === "full");
+  const role = orgAccount
+    ? approvedOrg
+      ? "Institution admin"
+      : "Institution account (pending verification)"
+    : session.adminOf.length && row.account_type === "teacher"
       ? "Institution admin"
       : ROLE_LABEL[row.account_type] ?? row.account_type;
   const initial = row.full_name.trim().charAt(0).toUpperCase() || "S";
@@ -65,6 +72,23 @@ export default async function ProfilePage() {
     { label: "Role", value: role },
     { label: "County", value: row.county || "Not set" },
     { label: "Job title", value: row.job_title || "Not set" },
+    {
+      label: "Organisation",
+      value:
+        affiliations.length === 0
+          ? "None linked"
+          : affiliations
+              .map((org) => {
+                const access =
+                  org.access === "full"
+                    ? "verified admin"
+                    : org.access === "pending_verification"
+                      ? "awaiting verification"
+                      : "awaiting admin grant";
+                return `${org.name} (${org.typeLabel}, ${access})`;
+              })
+              .join("; "),
+    },
     { label: "Email confirmed", value: row.email_verified_at ? formatWhen(row.email_verified_at) : "Not yet" },
     { label: "Last sign-in", value: formatWhen(row.last_login_at) },
     {
@@ -103,6 +127,7 @@ export default async function ProfilePage() {
 
         <div className="mt-space-md flex flex-wrap gap-space-sm">
           <ButtonLink cta={{ href: "/app/dashboard", label: "Dashboard" }} />
+          <ButtonLink cta={{ href: "/app/certificates", label: "Your certificates" }} variant="secondary" />
           <ButtonLink cta={{ href: "/app/assistant", label: "AI assistant" }} variant="secondary" />
           <ButtonLink cta={{ href: MOODLE_URL, label: "Open Moodle", external: true }} variant="secondary" />
         </div>

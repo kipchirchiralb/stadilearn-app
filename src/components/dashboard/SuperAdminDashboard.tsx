@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { BarChart, DoughnutChart, DualBarChart, LineChart } from "@/components/dashboard/AdminCharts";
 import { ButtonLink, Card, Icon, Notice } from "@/components/ui";
 import type { NamedCount, SeriesPoint, SuperAdminDashboardData } from "@/lib/admin-dashboard";
+import type { InstitutionApprovalRow } from "@/lib/institutions";
+import { InstitutionApprovalForm } from "@/components/dashboard/InstitutionApprovalForm";
 import { MOODLE_HOST, MOODLE_URL } from "@/lib/site";
 
 function fmt(value: number) {
@@ -120,7 +122,15 @@ function DataTable({
   );
 }
 
-export function SuperAdminDashboard({ data, firstName }: { data: SuperAdminDashboardData; firstName: string }) {
+export function SuperAdminDashboard({
+  data,
+  firstName,
+  approvals,
+}: {
+  data: SuperAdminDashboardData;
+  firstName: string;
+  approvals: InstitutionApprovalRow[];
+}) {
   const { platform: p, moodle: m } = data;
   const generated = when(data.generatedAt);
   const ticketsOpen = p.support.byStatus.filter((s) => !["resolved", "closed"].includes(s.key)).reduce((sum, s) => sum + s.n, 0);
@@ -140,6 +150,7 @@ export function SuperAdminDashboard({ data, firstName }: { data: SuperAdminDashb
         </div>
         <div className="flex flex-wrap gap-space-sm">
           <ButtonLink cta={{ href: MOODLE_URL, label: "Open Moodle", external: true }} variant="secondary" />
+          <ButtonLink cta={{ href: "/app/certificates/approvals", label: "Certificate approvals" }} variant="secondary" />
           <ButtonLink cta={{ href: "/app/assistant", label: "Open assistant" }} />
         </div>
       </div>
@@ -149,6 +160,83 @@ export function SuperAdminDashboard({ data, firstName }: { data: SuperAdminDashb
           {m.error ?? "Moodle summaries are unavailable. Stadilearn figures are still shown."}
         </Notice>
       ) : null}
+
+      <Card>
+        <div className="flex items-start justify-between gap-space-sm mb-space-sm">
+          <div>
+            <h2 className="font-headline-sm text-headline-sm text-on-surface">Institution access</h2>
+            <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
+              Verify organisations and nominate institution admins. Until you do, their dashboard shows no learner data.
+            </p>
+          </div>
+          <span className="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold shrink-0">
+            Stadilearn
+          </span>
+        </div>
+        {approvals.length === 0 ? (
+          <p className="font-body-sm text-body-sm text-on-surface-variant">No pending organisations or invited admins.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-outline-variant">
+                  {["Organisation", "Type", "Status", "Person", "Action"].map((col) => (
+                    <th
+                      key={col}
+                      className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant py-2 pr-3"
+                    >
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {approvals.map((row) => (
+                  <tr
+                    className="border-b border-surface-container last:border-0"
+                    key={`${row.institutionId}-${row.userId ?? "org"}-${row.action}`}
+                  >
+                    <td className="font-body-sm text-body-sm text-on-surface py-2 pr-3 align-top">
+                      {row.name}
+                      <span className="block font-label-sm text-label-sm text-on-surface-variant">{row.createdAt}</span>
+                    </td>
+                    <td className="font-body-sm text-body-sm text-on-surface py-2 pr-3 align-top">{row.typeLabel}</td>
+                    <td className="font-body-sm text-body-sm text-on-surface py-2 pr-3 align-top capitalize">
+                      {row.institutionStatus.replace(/_/g, " ")}
+                      {row.membershipStatus === "invited" ? " · invited admin" : ""}
+                    </td>
+                    <td className="font-body-sm text-body-sm text-on-surface py-2 pr-3 align-top">
+                      {row.userName ?? "No requester on file"}
+                      {row.userEmail ? (
+                        <span className="block font-label-sm text-label-sm text-on-surface-variant">{row.userEmail}</span>
+                      ) : null}
+                    </td>
+                    <td className="font-body-sm text-body-sm text-on-surface py-2 pr-3 align-top">
+                      {row.action === "approve" ? (
+                        <InstitutionApprovalForm
+                          action="approve"
+                          institutionId={row.institutionId}
+                          label="Approve and grant admin"
+                          userId={row.userId}
+                        />
+                      ) : row.userId ? (
+                        <InstitutionApprovalForm
+                          action="grant_admin"
+                          institutionId={row.institutionId}
+                          label="Grant admin"
+                          userId={row.userId}
+                        />
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-gutter">
         <Stat icon="group" label="Stadilearn accounts" value={p.users.total} hint={`${fmt(p.users.linked)} linked to Moodle`} />

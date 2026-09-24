@@ -1,3 +1,5 @@
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://stadilearn.co.ke";
+
 export const MOODLE_URL =
   process.env.NEXT_PUBLIC_MOODLE_URL ?? "https://elearning.stadilearn.co.ke";
 

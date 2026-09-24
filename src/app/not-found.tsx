@@ -1,13 +1,13 @@
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ButtonLink, Section } from "@/components/ui";
-import { getSessionUser } from "@/lib/auth/session";
+import { getHeaderUser } from "@/lib/header";
 
 export default async function NotFound() {
-  const user = await getSessionUser();
+  const user = await getHeaderUser();
   return (
     <>
-      <SiteHeader user={user ? { fullName: user.fullName } : null} />
+      <SiteHeader user={user} />
       <main className="w-full pt-24 bg-background flex-1">
         <Section>
           <div className="max-w-xl mx-auto text-center py-space-xl">

@@ -21,6 +21,7 @@ export function LearnerDashboard({ firstName, data }: { firstName: string; data:
         </div>
         <div className="flex flex-wrap gap-space-sm shrink-0">
           <ButtonLink cta={{ href: "/app/assistant", label: "Open AI assistant" }} />
+          <ButtonLink cta={{ href: "/app/certificates", label: "Your certificates" }} variant="secondary" />
           <ButtonLink cta={{ href: MOODLE_URL, label: "Open learning space", external: true }} variant="secondary" />
         </div>
       </div>

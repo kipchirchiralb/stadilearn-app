@@ -109,6 +109,7 @@ export type { MoodleCohortMembership, MoodleGroupMembership, TaughtMoodleCourse 
 
 type CohortRow = {
   id: number;
+  institution_id: number;
   name: string;
   status: string;
   starts_on: Date | string | null;
@@ -126,7 +127,7 @@ type MemberRow = {
 };
 
 async function listVisibleCohorts(user: SessionUser): Promise<CohortRow[]> {
-  const select = `SELECT c.id, c.name, c.status, c.starts_on, c.ends_on, c.moodle_cohort_id,
+  const select = `SELECT c.id, c.institution_id, c.name, c.status, c.starts_on, c.ends_on, c.moodle_cohort_id,
         i.name AS institution, p.name AS programme
      FROM cohorts c
      JOIN institutions i ON i.id = c.institution_id
@@ -460,6 +461,15 @@ export async function getOwnMoodleProgress(user: SessionUser): Promise<LearnerDa
   }
 }
 
+export async function getCohortsForUser(user: SessionUser, institutionIds?: number[]): Promise<CohortInsight[]> {
+  const allowed = institutionIds
+    ?.map(n)
+    .filter((id) => id > 0 && (user.accountType === "super_admin" || user.adminOf.includes(id)));
+  const rows = await listVisibleCohorts(user);
+  const scoped = allowed ? rows.filter((row) => allowed.includes(n(row.institution_id))) : rows;
+  return Promise.all(scoped.map(loadCohortInsight));
+}
+
 export async function getTeacherDashboard(user: SessionUser): Promise<TeacherDashboardData> {
   const resolved = await resolveMoodleLink(user);
   user = resolved.user;
@@ -471,14 +481,13 @@ export async function getTeacherDashboard(user: SessionUser): Promise<TeacherDas
           return { moodleLinked: true, moodleLinkStatus: "linked" as const, courses: [] };
         })
     : Promise.resolve({ moodleLinked: false, moodleLinkStatus: resolved.status, courses: [] });
-  const [rows, training, related] = await Promise.all([
-    listVisibleCohorts(user),
+  const [cohorts, training, related] = await Promise.all([
+    getCohortsForUser(user),
     trainingPromise,
     user.moodleUserId
       ? getMoodleTeacherRelated(user.moodleUserId)
       : Promise.resolve({ coursesTaught: [], cohorts: [], groups: [] }),
   ]);
-  const cohorts = await Promise.all(rows.map(loadCohortInsight));
   const totals = cohorts.reduce(
     (acc, c) => {
       acc.learners += c.learners;

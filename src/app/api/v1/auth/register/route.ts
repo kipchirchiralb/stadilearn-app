@@ -29,6 +29,7 @@ export async function POST(request: Request) {
       email: body.email,
       role: body.role as SignupRole,
       organization: typeof body?.organization === "string" ? body.organization : undefined,
+      institutionType: typeof body?.institutionType === "string" ? body.institutionType : undefined,
       jobTitle: typeof body?.jobTitle === "string" ? body.jobTitle : undefined,
       county: typeof body?.county === "string" ? body.county : undefined,
       demographicsConsent: body?.demographicsConsent === true,

@@ -50,8 +50,8 @@ const TOPICS: { icon: string; title: string; items: { q: string; a: React.ReactN
     icon: "workspace_premium",
     title: "Certificates",
     items: [
-      { q: "When do I get my certificate?", a: "After you meet the course completion requirements in Moodle. Status appears in your dashboard once progress has synchronised." },
-      { q: "How does someone verify my certificate?", a: <>They enter your code on <Link className="text-primary underline" href="/verify-certificate">Verify Certificate</Link>.</> },
+      { q: "When do I get my certificate?", a: <>Learners and teachers request a certificate from <Link className="text-primary underline" href="/app/certificates">Your certificates</Link> after signing in. A Stadilearn admin checks Moodle completion using your signup email, then issues a branded PDF with a certificate number.</> },
+      { q: "How does someone verify my certificate?", a: <>They enter the certificate number on <Link className="text-primary underline" href="/verify-certificate">Verify Certificate</Link>.</> },
     ],
   },
   {

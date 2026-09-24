@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-type HeaderUser = { fullName: string };
+import type { HeaderUser } from "@/lib/header";
 
 const avatarClass =
   "w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary hover:bg-primary-container transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-container";
@@ -22,27 +21,13 @@ export function HeaderAuth({ user }: { user: HeaderUser | null }) {
   return (
     <div className="flex items-center gap-space-xs">
       {user ? (
-        <div className="hidden lg:flex items-center gap-space-xs">
-          <Link
-            className="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors px-space-xs py-space-xs"
-            href="/app/dashboard"
-          >
-            Dashboard
-          </Link>
-          <Link
-            className="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors px-space-xs py-space-xs"
-            href="/app/assistant"
-          >
-            Assistant
-          </Link>
-          <button
-            className="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors px-space-xs py-space-xs"
-            onClick={signOut}
-            type="button"
-          >
-            Sign out
-          </button>
-        </div>
+        <button
+          className="hidden lg:inline-flex text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors px-space-xs py-space-xs"
+          onClick={signOut}
+          type="button"
+        >
+          Sign out
+        </button>
       ) : (
         <Link
           className="hidden lg:inline-flex text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors px-space-xs py-space-xs"

@@ -1,7 +1,7 @@
 import { appDb, type DbTx } from "@/lib/db";
 import { normalizeEmail } from "@/lib/auth/hash";
 import { issueOtp, type OtpPurpose } from "@/lib/auth/otp";
-import type { SignupRole } from "@/lib/validation";
+import { isInstitutionType, type InstitutionType, type SignupRole } from "@/lib/validation";
 
 export const POLICY_VERSION = "1.0";
 
@@ -16,6 +16,7 @@ export type RegistrationInput = {
   email: string;
   role: SignupRole;
   organization?: string;
+  institutionType?: string;
   jobTitle?: string;
   county?: string;
   demographicsConsent: boolean;
@@ -42,6 +43,42 @@ async function recordConsents(tx: DbTx, userId: number, demographics: boolean) {
       [userId, purpose, POLICY_VERSION],
     );
   }
+}
+
+/** Queue the signup user as an invited admin. Super admin later activates this. */
+async function inviteInstitutionAdmin(tx: DbTx, institutionId: number, userId: number) {
+  await tx.execute(
+    `INSERT INTO institution_members (institution_id, user_id, member_role, status)
+     VALUES (?, ?, 'admin', 'invited')
+     ON DUPLICATE KEY UPDATE
+       member_role = IF(status = 'removed', 'admin', member_role),
+       status = IF(status = 'removed', 'invited', status)`,
+    [institutionId, userId],
+  );
+}
+
+async function attachInstitutionRequest(
+  tx: DbTx,
+  userId: number,
+  organization: string,
+  type: InstitutionType,
+  county: number | null,
+) {
+  try {
+    const created = await tx.execute(
+      `INSERT INTO institutions (name, type, county_id, status, requested_by)
+       VALUES (?, ?, ?, 'pending', ?)`,
+      [organization, type, county, userId],
+    );
+    await inviteInstitutionAdmin(tx, Number(created.insertId), userId);
+    return;
+  } catch (err) {
+    const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";
+    if (code !== "ER_DUP_ENTRY") throw err;
+  }
+
+  const [existing] = await tx.query<{ id: number }>("SELECT id FROM institutions WHERE name = ?", [organization]);
+  if (existing) await inviteInstitutionAdmin(tx, Number(existing.id), userId);
 }
 
 /**
@@ -83,16 +120,8 @@ export async function startRegistration(input: RegistrationInput): Promise<void>
       await recordConsents(tx, userId, input.demographicsConsent);
 
       if (input.role === "institution" && organization.length >= 2) {
-        try {
-          await tx.execute(
-            `INSERT INTO institutions (name, type, county_id, status, requested_by)
-             VALUES (?, 'other', ?, 'pending', ?)`,
-            [organization, county, userId],
-          );
-        } catch (err) {
-          const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";
-          if (code !== "ER_DUP_ENTRY") throw err;
-        }
+        const type = isInstitutionType(input.institutionType) ? input.institutionType : "other";
+        await attachInstitutionRequest(tx, userId, organization, type, county);
       }
     });
   } catch (err) {

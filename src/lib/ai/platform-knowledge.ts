@@ -12,7 +12,7 @@ export const PLATFORM_GUIDE = `Stadilearn has two connected systems with separat
 - Lost email access: ${ROUTES.help} and ${"/account-recovery"} — human support verifies identity. Do not guess or reset Moodle from here.
 - After sign-in: /app/dashboard (welcome) and /app/assistant (AI). Open tutor for course topics, support for accounts and how-to, trainer (teachers/admins only) for drafts.
 - Public catalogue: ${ROUTES.courses} — course pages under /learn/[slug].
-- Certificates: issued after Moodle completion; anyone can check a code at ${ROUTES["verify-certificate"]}.
+- Certificates: request from /app/certificates after you complete a Moodle course. A Stadilearn admin checks completion using your signup email, then you download a PDF with a certificate number. Anyone can check a number at ${ROUTES["verify-certificate"]}.
 - Help: ${ROUTES.help}. Contact a person: ${ROUTES.contact} (${CONTACT.email}).
 - Privacy / terms / data requests: ${ROUTES["privacy-policy"]}, ${ROUTES["terms-of-service"]}, ${ROUTES["kenyan-data-protection"]}.
 - Institution accounts start pending. They do not see learner data until Stadilearn verifies the organisation. Institution admin rights are granted by a Stadilearn super admin, not at signup.
@@ -59,6 +59,6 @@ export const PLATFORM_HELP_DOCS: { key: string; title: string; url: string; text
     key: "ai-and-certificates",
     title: "AI assistants, progress and certificates",
     url: ROUTES["ai-support"],
-    text: `The tutor answers questions from indexed course material and will not do graded work for you. Support helps you find pages and use Moodle. Trainer drafts are for teachers and must be reviewed. Open /app/assistant when signed in. Certificates are issued after Moodle completion requirements are met and can be checked at ${ROUTES["verify-certificate"]}. Progress on Stadilearn needs a Moodle user with the same email. Flag bad AI answers in the chat. Contact ${CONTACT.email} or ${ROUTES.contact} for a person.`,
+    text: `The tutor answers questions from indexed course material and will not do graded work for you. Support helps you find pages and use Moodle. Trainer drafts are for teachers and must be reviewed. Open /app/assistant when signed in. Request a certificate at /app/certificates; a Stadilearn admin checks Moodle completion using your signup email, then you download a PDF. Anyone can check the certificate number at ${ROUTES["verify-certificate"]}. Progress on Stadilearn needs a Moodle user with the same email. Flag bad AI answers in the chat. Contact ${CONTACT.email} or ${ROUTES.contact} for a person.`,
   },
 ];

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import { HeaderAuth } from "@/components/layout/HeaderAuth";
+import type { HeaderUser } from "@/lib/header";
 import { MOODLE_URL, ROUTES } from "@/lib/site";
 
 const ACTIVE =
@@ -27,10 +28,21 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function SiteHeader({ user }: { user: { fullName: string } | null }) {
+function appNav(user: HeaderUser) {
+  const items = [
+    { href: "/app/dashboard", label: "Dashboard" },
+    { href: "/app/assistant", label: "Assistant" },
+  ];
+  if (user.nav === "certificates") items.push({ href: "/app/certificates", label: "Your certificates" });
+  if (user.nav === "approvals") items.push({ href: "/app/certificates/approvals", label: "Certificate approvals" });
+  return items;
+}
+
+export function SiteHeader({ user }: { user: HeaderUser | null }) {
   const pathname = usePathname() ?? "/";
   const [open, setOpen] = useState(false);
   const menuId = useId();
+  const signedIn = Boolean(user);
 
   useEffect(() => {
     setOpen(false);
@@ -49,11 +61,10 @@ export function SiteHeader({ user }: { user: { fullName: string } | null }) {
     };
   }, [open]);
 
-  const topLink = (path: "courses" | "ai-support" | "about", label: string) => {
-    const href = ROUTES[path];
+  const topLink = (href: string, label: string) => {
     const active = isActive(pathname, href);
     return (
-      <Link aria-current={active ? "page" : undefined} className={active ? ACTIVE : INACTIVE} data-path={path} href={href}>
+      <Link aria-current={active ? "page" : undefined} className={active ? ACTIVE : INACTIVE} href={href}>
         {label}
       </Link>
     );
@@ -85,47 +96,64 @@ export function SiteHeader({ user }: { user: { fullName: string } | null }) {
     window.location.assign("/");
   }
 
+  const signedInLinks = user ? appNav(user) : [];
+
   return (
     <header className="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,102,128,0.06)]">
       <div className="h-24 max-w-7xl mx-auto px-margin flex items-center justify-between gap-gutter">
         <div className="flex items-center gap-space-md min-w-0">
-          <Link className="flex items-center gap-space-sm focus:outline-none shrink-0" data-path="home" href="/">
+          <Link className="flex items-center gap-space-sm focus:outline-none shrink-0" data-path="home" href={signedIn ? "/app/dashboard" : "/"}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="stadilearnlogo.png" className="h-10 w-auto object-contain" src="/stadilearnlogo.png" />
+            <img alt="Stadilearn" className="h-10 w-auto object-contain" src="/stadilearnlogo.png" />
           </Link>
         </div>
         <nav
           className="hidden lg:flex items-center gap-space-xs"
           data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-sm"
         >
-          {topLink("courses", "Learn")}
-          <div className="relative group">
-            <button aria-expanded="false" className={`inline-flex items-center gap-1 ${INACTIVE}`} type="button">
-              The Learning Hub
-              <span className="material-symbols-outlined text-[16px]">expand_more</span>
-            </button>
-            <div className="invisible absolute left-0 top-full z-50 w-56 pt-space-xs opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-              <div className="rounded-xl bg-surface-container-lowest p-space-xs shadow-lg ring-1 ring-outline-variant/40">
-                {HUB.map((item) => {
-                  const href = ROUTES[item.path];
-                  const active = isActive(pathname, href);
-                  return (
-                    <Link
-                      aria-current={active ? "page" : undefined}
-                      className={active ? MENU_ITEM_ACTIVE : MENU_ITEM}
-                      data-path={item.path}
-                      href={href}
-                      key={item.path}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
+          {signedIn && user ? (
+            <>
+              {signedInLinks.map((item) => (
+                <span key={item.href}>{topLink(item.href, item.label)}</span>
+              ))}
+              {user.nav === "institution" ? (
+                <span className={`${INACTIVE} cursor-default`} title="Certificates issued to people in your organisation">
+                  Certificates · {user.associatedCertificates ?? 0}
+                </span>
+              ) : null}
+            </>
+          ) : (
+            <>
+              {topLink(ROUTES.courses, "Learn")}
+              <div className="relative group">
+                <button aria-expanded="false" className={`inline-flex items-center gap-1 ${INACTIVE}`} type="button">
+                  The Learning Hub
+                  <span className="material-symbols-outlined text-[16px]">expand_more</span>
+                </button>
+                <div className="invisible absolute left-0 top-full z-50 w-56 pt-space-xs opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                  <div className="rounded-xl bg-surface-container-lowest p-space-xs shadow-lg ring-1 ring-outline-variant/40">
+                    {HUB.map((item) => {
+                      const href = ROUTES[item.path];
+                      const active = isActive(pathname, href);
+                      return (
+                        <Link
+                          aria-current={active ? "page" : undefined}
+                          className={active ? MENU_ITEM_ACTIVE : MENU_ITEM}
+                          data-path={item.path}
+                          href={href}
+                          key={item.path}
+                        >
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          {topLink("ai-support", "AI Support")}
-          {topLink("about", "About")}
+              {topLink(ROUTES["ai-support"], "AI Support")}
+              {topLink(ROUTES.about, "About")}
+            </>
+          )}
         </nav>
         <div className="flex items-center gap-space-sm shrink-0">
           <HeaderAuth user={user} />
@@ -164,36 +192,45 @@ export function SiteHeader({ user }: { user: { fullName: string } | null }) {
             className="relative z-50 max-h-[calc(100dvh-6rem)] overflow-y-auto border-t border-outline-variant/40 bg-surface px-margin py-space-md shadow-lg"
             id={menuId}
           >
-            <div className="flex flex-col gap-1 pb-space-md">
-              {sheetLink(ROUTES.courses, "Learn", { path: "courses" })}
-            </div>
-            <p className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant px-space-sm mb-1">
-              The Learning Hub
-            </p>
-            <div className="flex flex-col gap-1 pb-space-md">
-              {HUB.map((item) => (
-                <span key={item.path}>{sheetLink(ROUTES[item.path], item.label, { path: item.path })}</span>
-              ))}
-            </div>
-            <div className="flex flex-col gap-1 pb-space-md">
-              {sheetLink(ROUTES["ai-support"], "AI Support", { path: "ai-support" })}
-              {sheetLink(ROUTES.about, "About", { path: "about" })}
-            </div>
-            <div className="flex flex-col gap-1 border-t border-outline-variant/40 pt-space-md">
-              {sheetLink(MOODLE_URL, "Open Moodle", { external: true })}
-              {user ? (
-                <>
-                  {sheetLink("/app/dashboard", "Dashboard")}
-                  {sheetLink("/app/assistant", "Assistant")}
+            {user ? (
+              <>
+                <div className="flex flex-col gap-1 pb-space-md">
+                  {signedInLinks.map((item) => (
+                    <span key={item.href}>{sheetLink(item.href, item.label)}</span>
+                  ))}
+                  {user.nav === "institution" ? (
+                    <p className={`${MENU_ITEM} cursor-default`}>Certificates · {user.associatedCertificates ?? 0}</p>
+                  ) : null}
+                </div>
+                <div className="flex flex-col gap-1 border-t border-outline-variant/40 pt-space-md">
+                  {sheetLink(MOODLE_URL, "Open Moodle", { external: true })}
                   {sheetLink("/app/profile", "Your profile")}
                   <button className={`${MENU_ITEM} w-full text-left`} onClick={signOut} type="button">
                     Sign out
                   </button>
-                </>
-              ) : (
-                sheetLink("/login", "Sign in", { path: "sign-in" })
-              )}
-            </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col gap-1 pb-space-md">{sheetLink(ROUTES.courses, "Learn", { path: "courses" })}</div>
+                <p className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant px-space-sm mb-1">
+                  The Learning Hub
+                </p>
+                <div className="flex flex-col gap-1 pb-space-md">
+                  {HUB.map((item) => (
+                    <span key={item.path}>{sheetLink(ROUTES[item.path], item.label, { path: item.path })}</span>
+                  ))}
+                </div>
+                <div className="flex flex-col gap-1 pb-space-md">
+                  {sheetLink(ROUTES["ai-support"], "AI Support", { path: "ai-support" })}
+                  {sheetLink(ROUTES.about, "About", { path: "about" })}
+                </div>
+                <div className="flex flex-col gap-1 border-t border-outline-variant/40 pt-space-md">
+                  {sheetLink(MOODLE_URL, "Open Moodle", { external: true })}
+                  {sheetLink("/login", "Sign in", { path: "sign-in" })}
+                </div>
+              </>
+            )}
           </nav>
         </div>
       )}
