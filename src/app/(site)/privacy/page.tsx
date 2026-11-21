@@ -1,9 +1,13 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage } from "@/components/legal/LegalPage";
+import { pageMeta } from "@/lib/seo";
 import { CONTACT, MOODLE_HOST } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Privacy Policy", description: "How Stadilearn collects, uses and protects personal data." };
+export const metadata = pageMeta({
+  title: "Privacy Policy",
+  description: "How Stadilearn collects, uses and protects personal data.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

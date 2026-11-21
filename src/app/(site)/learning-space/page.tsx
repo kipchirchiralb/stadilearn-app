@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import { CheckList, CtaBand, MoodleHandoffNotice, PageHero, Section, SectionHeader } from "@/components/ui";
+import { pageMeta } from "@/lib/seo";
 import { MOODLE_HOST, MOODLE_URL } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "Open Learning Space",
   description: "Your Moodle learning space is where lessons, quizzes and submissions happen. Here is what to expect before you go.",
-};
+  path: "/learning-space",
+});
 
 export default function LearningSpacePage() {
   return (

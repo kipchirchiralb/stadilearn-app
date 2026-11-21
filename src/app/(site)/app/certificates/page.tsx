@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { RequestCertificateForm } from "@/components/certificates/RequestCertificateForm";
 import { ButtonLink, Card, Icon, Notice, Section } from "@/components/ui";
 import { listMyCertificates, listRequestableCourses } from "@/lib/certificates";
 import { getSessionUser } from "@/lib/auth/session";
+import { noIndexMeta } from "@/lib/seo";
 import { headerUserFrom } from "@/lib/header";
 import { ROUTES } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Your certificates", robots: { index: false } };
+export const metadata = noIndexMeta("Your certificates");
 
 function formatDay(iso: string) {
   if (!iso) return "—";

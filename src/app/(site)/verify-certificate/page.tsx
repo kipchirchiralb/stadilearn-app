@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import { VerifyCertificateForm } from "@/components/forms/VerifyCertificateForm";
 import { Card, Eyebrow, Notice, Section } from "@/components/ui";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "Verify a Stadilearn certificate",
   description: "Enter the verification code shown on a Stadilearn certificate to confirm it is genuine.",
-};
+  path: "/verify-certificate",
+});
 
 type Props = { searchParams: Promise<{ code?: string }> };
 

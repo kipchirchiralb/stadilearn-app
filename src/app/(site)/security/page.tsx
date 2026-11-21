@@ -1,8 +1,12 @@
-import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/LegalPage";
+import { pageMeta } from "@/lib/seo";
 import { CONTACT } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Security", description: "How Stadilearn protects the platform and how to report a vulnerability." };
+export const metadata = pageMeta({
+  title: "Security",
+  description: "How Stadilearn protects the platform and how to report a vulnerability.",
+  path: "/security",
+});
 
 export default function SecurityPage() {
   return (

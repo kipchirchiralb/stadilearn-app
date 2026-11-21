@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { DeclineCertificateForm, IssueCertificateForm } from "@/components/certificates/CertificateReviewForms";
 import { Card, Notice, Section } from "@/components/ui";
 import { getSessionUser } from "@/lib/auth/session";
+import { noIndexMeta } from "@/lib/seo";
 import { listCertificateApprovals } from "@/lib/certificates";
 
-export const metadata: Metadata = { title: "Certificate approvals", robots: { index: false } };
+export const metadata = noIndexMeta("Certificate approvals");
 
 function formatWhen(iso: string) {
   if (!iso) return "—";

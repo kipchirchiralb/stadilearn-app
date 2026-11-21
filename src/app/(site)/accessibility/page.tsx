@@ -1,8 +1,12 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage } from "@/components/legal/LegalPage";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Accessibility", description: "Stadilearn's accessibility commitment (WCAG 2.1 AA) and how to report a barrier." };
+export const metadata = pageMeta({
+  title: "Accessibility",
+  description: "Stadilearn's accessibility commitment (WCAG 2.1 AA) and how to report a barrier.",
+  path: "/accessibility",
+});
 
 export default function AccessibilityPage() {
   return (

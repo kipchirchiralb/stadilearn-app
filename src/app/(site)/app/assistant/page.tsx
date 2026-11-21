@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AssistantChat } from "@/components/ai/AssistantChat";
 import { AiDisclosureNotice, Section } from "@/components/ui";
+import { noIndexMeta } from "@/lib/seo";
 import { canUseTrainerAssistant, getSessionUser } from "@/lib/auth/session";
 
-export const metadata: Metadata = { title: "AI assistant", robots: { index: false } };
+export const metadata = noIndexMeta("AI assistant");
 
 export default async function AssistantPage({ searchParams }: { searchParams: Promise<{ kind?: string }> }) {
   const user = await getSessionUser();

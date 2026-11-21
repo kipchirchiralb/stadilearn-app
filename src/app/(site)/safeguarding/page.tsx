@@ -1,9 +1,13 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage } from "@/components/legal/LegalPage";
+import { pageMeta } from "@/lib/seo";
 import { CONTACT } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Safeguarding", description: "How Stadilearn protects learners, including under-18s, and how to raise a concern." };
+export const metadata = pageMeta({
+  title: "Safeguarding",
+  description: "How Stadilearn protects learners, including under-18s, and how to raise a concern.",
+  path: "/safeguarding",
+});
 
 export default function SafeguardingPage() {
   return (

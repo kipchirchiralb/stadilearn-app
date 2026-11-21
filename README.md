@@ -219,14 +219,18 @@ Auth is wired to the custom database and SMTP. Other handlers still validate inp
 
 ### Setup
 
-1. **Custom DB**: `mysql -u root -p < schema.sql` creates the `stadilearn` database (MariaDB 11.4+ / MySQL 8).
+1. **Custom DB**: create an empty `utf8mb4` database, then load `schema.sql` into it (MariaDB 11.4+ / MySQL 8).
+   It creates every table, including the certificates tables, plus the three super admins (section 13 at the bottom of the file).
+   - Command line: `mysql -u root -p -e "CREATE DATABASE stadilearn CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"`
+     then `mysql -u root -p stadilearn < schema.sql`.
+   - phpMyAdmin / cPanel: select the database (e.g. `cpuser_stadilearn`), open **Import**, and upload `schema.sql`.
+     The database user needs the TRIGGER and CREATE VIEW privileges.
 2. **DB users**: edit the passwords (and Moodle's DB name/prefix) in `db-grants.sql`, then run it as a DBA. On
    cPanel/DirectAdmin hosting, create the same users and privileges in the control panel.
-3. **Super admins**: `mysql -u root -p stadilearn < adminseed.sql` creates the three Stadilearn admins.
-4. **Env**: copy `.env.example` to `.env.local` and fill in the `CUSTOM_DB_*`, `MOODLE_DB_*`, `SMTP_*`, `SESSION_SECRET` and `AI_*` values.
-5. **Index course content**: `npm run ai:index`. Rerun after content changes (for example nightly by cron). It
+3. **Env**: copy `.env.example` to `.env.local` and fill in the `CUSTOM_DB_*`, `MOODLE_DB_*`, `SMTP_*`, `SESSION_SECRET` and `AI_*` values.
+4. **Index course content**: `npm run ai:index`. Rerun after content changes (for example nightly by cron). It
    only embeds new or changed documents and withdraws anything hidden or deleted in Moodle.
-6. **Optional, skip email during development**: `npm run dev:session -- you@example.com --type teacher`, add the printed
+5. **Optional, skip email during development**: `npm run dev:session -- you@example.com --type teacher`, add the printed
    `sl_session` cookie in the browser, and open `/app/assistant`.
 
 ### Roles in the schema
@@ -235,7 +239,7 @@ Auth is wired to the custom database and SMTP. Other handlers still validate inp
 | --- | --- |
 | Learner, Teacher | `users.account_type` (self-signup) |
 | Institution admin | `institution_members.member_role = 'admin'`: a teacher nominated by the super admin |
-| Super admin | `users.account_type = 'super_admin'`: at most 3, enforced by triggers. Seeded by `adminseed.sql` |
+| Super admin | `users.account_type = 'super_admin'`: at most 3, enforced by triggers. Seeded at the bottom of `schema.sql` |
 
 ### How the assistant reaches data
 

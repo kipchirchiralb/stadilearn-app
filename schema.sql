@@ -26,13 +26,20 @@
 --   2. Identity & auth    6. AI assistant       10. Reports
 --   3. Institutions       7. Support            11. Audit
 --   4. Moodle sync        8. Certificates       12. AI read-only views + seeds
+--                                              13. Super admin seed
+-- =============================================================================
+
+-- Runs in whichever database is selected, so it imports as-is in phpMyAdmin
+-- (select the database, then Import) and on cPanel hosting, where the database
+-- name has an account prefix (e.g. cpuser_stadilearn).
+-- From the command line, create the database first:
+--   mysql -u root -p -e "CREATE DATABASE stadilearn CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+--   mysql -u root -p stadilearn < schema.sql
+-- The database user needs CREATE, ALTER, INDEX, REFERENCES, TRIGGER and CREATE VIEW.
 -- =============================================================================
 
 SET NAMES utf8mb4;
 SET time_zone = '+00:00';
-
-CREATE DATABASE IF NOT EXISTS stadilearn CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE stadilearn;
 
 -- -----------------------------------------------------------------------------
 -- 1. Reference data
@@ -770,3 +777,42 @@ INSERT INTO notification_templates (code, language, subject, body) VALUES
  ('otp_code',           'sw', 'Nambari yako ya Stadilearn', 'Nambari yako ya Stadilearn ni {{code}}. Itaisha baada ya dakika {{minutes}}. Kama hukuiomba, puuza barua pepe hii.'),
  ('certificate_issued', 'en', 'Your certificate is ready', 'Congratulations {{name}}! Your certificate for {{course}} is ready. Verify it at {{verify_url}}.'),
  ('support_update',     'en', 'Update on your support request', 'There is an update on your request "{{subject}}". Sign in to Stadilearn to read it.');
+
+-- -----------------------------------------------------------------------------
+-- 13. Super admin seed
+-- -----------------------------------------------------------------------------
+-- Creates (or promotes) the three Stadilearn super admins. Safe to rerun on its
+-- own: existing accounts with these emails are promoted and reactivated, not
+-- duplicated. The schema caps super admins at 3, so this uses every slot; on an
+-- existing database, demote any other super admins first.
+--
+-- No passwords: admins sign in with an emailed one-time code, so each address
+-- must be a mailbox its owner controls.
+
+-- All or nothing: if any step fails, the client stops and nothing is kept.
+START TRANSACTION;
+
+-- 1. Create the accounts (or reactivate existing ones). The admin role is
+--    granted in step 3, because the 3-admin cap trigger also fires on the
+--    INSERT half of an upsert.
+INSERT INTO users (email, full_name, status, email_verified_at) VALUES
+  ('admin@stadilearn.co.ke',        'Stadilearn Admin',   'active', UTC_TIMESTAMP(3)),
+  ('kipchirchiralb@gmail.com',      'Albert Kipchirchir', 'active', UTC_TIMESTAMP(3)),
+  ('albertkipchirchir02@gmail.com', 'Albert Kipchirchir', 'active', UTC_TIMESTAMP(3))
+ON DUPLICATE KEY UPDATE
+  status            = 'active',
+  email_verified_at = COALESCE(email_verified_at, UTC_TIMESTAMP(3));
+
+-- 2. Audit only the accounts that are about to be promoted.
+INSERT INTO audit_events (actor_id, action, entity_type, entity_id, details)
+SELECT NULL, 'auth.super_admin_granted', 'user', CAST(id AS CHAR), JSON_OBJECT('source', 'schema.sql')
+FROM users
+WHERE email IN ('admin@stadilearn.co.ke', 'kipchirchiralb@gmail.com', 'albertkipchirchir02@gmail.com')
+  AND account_type <> 'super_admin';
+
+-- 3. Promote.
+UPDATE users SET account_type = 'super_admin'
+WHERE email IN ('admin@stadilearn.co.ke', 'kipchirchiralb@gmail.com', 'albertkipchirchir02@gmail.com')
+  AND account_type <> 'super_admin';
+
+COMMIT;

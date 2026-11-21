@@ -7,8 +7,8 @@ import { CourseCard } from "./CourseCard";
 const selectClass =
   "w-full rounded-lg bg-surface-container-lowest px-space-sm py-space-sm font-body-sm text-body-sm text-on-surface ring-1 ring-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container";
 
-export function CourseCatalogue({ courses }: { courses: Course[] }) {
-  const [query, setQuery] = useState("");
+export function CourseCatalogue({ courses, initialQuery = "" }: { courses: Course[]; initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery);
   const [level, setLevel] = useState("");
   const [topic, setTopic] = useState("");
   const [language, setLanguage] = useState("");

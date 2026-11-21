@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CertificateResult } from "@/lib/certificates";
 import { Field, FormAlert, inputClass, submitClass } from "./fields";
 
@@ -11,8 +11,7 @@ export function VerifyCertificateForm({ initialCode = "" }: { initialCode?: stri
   const [error, setError] = useState("");
   const [result, setResult] = useState<CertificateResult | null>(null);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function verify(value: string) {
     setLoading(true);
     setError("");
     setResult(null);
@@ -20,7 +19,7 @@ export function VerifyCertificateForm({ initialCode = "" }: { initialCode?: stri
       const res = await fetch("/api/v1/certificates/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code: value }),
       });
       const data = await res.json();
       if (!res.ok) setError(data.error ?? "Something went wrong. Please try again.");
@@ -31,6 +30,19 @@ export function VerifyCertificateForm({ initialCode = "" }: { initialCode?: stri
       setLoading(false);
     }
   }
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    void verify(code);
+  }
+
+  // Links in certificate emails carry ?code=, so check it straight away.
+  const autoChecked = useRef(false);
+  useEffect(() => {
+    if (autoChecked.current || !initialCode.trim()) return;
+    autoChecked.current = true;
+    void verify(initialCode);
+  }, [initialCode]);
 
   return (
     <div className="space-y-space-md">

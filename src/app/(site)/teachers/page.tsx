@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import { Card, CheckList, CtaBand, FeatureGrid, Icon, PageHero, Section, SectionHeader, Steps } from "@/components/ui";
+import { pageMeta } from "@/lib/seo";
 import { MOODLE_HOST } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "For Teachers",
   description: "Teacher training for confident digital and AI literacy delivery, with cohort insights and AI-assisted drafting that you review.",
-};
+  path: "/teachers",
+});
 
 export default function TeachersPage() {
   return (

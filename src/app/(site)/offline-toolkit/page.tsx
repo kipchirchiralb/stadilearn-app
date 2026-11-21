@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import { CheckList, FeatureGrid, Notice, PageHero, Section, SectionHeader } from "@/components/ui";
+import { pageMeta } from "@/lib/seo";
 import { MOODLE_URL } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "Offline & Low-Data Toolkit",
   description: "How to study with limited connectivity: downloadable PDFs, low-data settings and what still needs a connection.",
-};
+  path: "/offline-toolkit",
+});
 
 export default function OfflineToolkitPage() {
   return (

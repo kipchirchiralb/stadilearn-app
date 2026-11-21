@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { InstitutionDashboard } from "@/components/dashboard/InstitutionDashboard";
 import { LearnerDashboard } from "@/components/dashboard/LearnerDashboard";
@@ -9,8 +8,9 @@ import { getSuperAdminDashboard } from "@/lib/admin-dashboard";
 import { getLearnerDashboard, getTeacherDashboard } from "@/lib/dashboard";
 import { getInstitutionDashboard, listInstitutionApprovals } from "@/lib/institutions";
 import { getSessionUser } from "@/lib/auth/session";
+import { noIndexMeta } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Dashboard", robots: { index: false } };
+export const metadata = noIndexMeta("Dashboard");
 
 export default async function DashboardPage() {
   const user = await getSessionUser();

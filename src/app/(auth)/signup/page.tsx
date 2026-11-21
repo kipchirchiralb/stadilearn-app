@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
 import { SignupForm } from "@/components/auth/SignupForm";
+import { noIndexMeta } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Create account", robots: { index: false } };
+export const metadata = noIndexMeta("Create account");
 
 type Props = { searchParams: Promise<{ role?: string }> };
 

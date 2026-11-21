@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -14,6 +13,7 @@ import {
   SectionHeader,
 } from "@/components/ui";
 import { COURSES, getCourse } from "@/lib/courses";
+import { noIndexMeta, pageMeta } from "@/lib/seo";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -21,10 +21,15 @@ export function generateStaticParams() {
   return COURSES.map((c) => ({ slug: c.slug }));
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props) {
   const course = getCourse((await params).slug);
-  if (!course) return { title: "Course not found" };
-  return { title: course.title, description: course.summary };
+  if (!course) return noIndexMeta("Course not found");
+  return pageMeta({
+    title: course.title,
+    description: course.summary,
+    path: `/learn/${course.slug}`,
+    keywords: [course.topic, course.level, "Stadilearn", "Kenya", ...course.tags],
+  });
 }
 
 export default async function CourseDetailPage({ params }: Props) {
@@ -45,10 +50,15 @@ export default async function CourseDetailPage({ params }: Props) {
       <section className="w-full bg-surface py-space-xl lg:py-20">
         <div className="max-w-7xl mx-auto px-margin">
           <nav aria-label="Breadcrumb" className="mb-space-md font-body-sm text-body-sm text-on-surface-variant">
+            <Link className="hover:text-primary" href="/">
+              Home
+            </Link>
+            {" / "}
             <Link className="hover:text-primary" href="/learn">
               Courses
-            </Link>{" "}
-            / <span className="text-on-surface">{course.title}</span>
+            </Link>
+            {" / "}
+            <span className="text-on-surface">{course.title}</span>
           </nav>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter lg:gap-space-xl items-start">
             <div className="lg:col-span-7 flex flex-col space-y-space-md">

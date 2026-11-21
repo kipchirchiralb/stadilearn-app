@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ButtonLink, Section } from "@/components/ui";
@@ -6,9 +5,10 @@ import { SESSION_COOKIE, getSessionUser, revokeSessionCookie } from "@/lib/auth/
 import { appDb } from "@/lib/db";
 import { listInstitutionAffiliations, wantsInstitutionDashboard } from "@/lib/institutions";
 import { ensureMoodleLinked } from "@/lib/moodle/identity";
+import { noIndexMeta } from "@/lib/seo";
 import { MOODLE_HOST, MOODLE_URL } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Your profile", robots: { index: false } };
+export const metadata = noIndexMeta("Your profile");
 
 const ROLE_LABEL: Record<string, string> = {
   learner: "Learner",

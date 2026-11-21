@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import { FeatureGrid, MoodleHandoffNotice, PageHero, Section, SectionHeader } from "@/components/ui";
+import { pageMeta } from "@/lib/seo";
 import { MOODLE_HOST, MOODLE_URL } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "Trainer Workspace",
   description: "Trainer and author tools in Moodle for teaching, grading and content creation, plus cohort insights and AI drafting on Stadilearn.",
-};
+  path: "/trainer-workspace",
+});
 
 export default function TrainerWorkspacePage() {
   return (

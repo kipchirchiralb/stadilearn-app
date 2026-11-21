@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
 import { Card, CheckList, CtaBand, FeatureGrid, Icon, Notice, PageHero, Section, SectionHeader, Steps } from "@/components/ui";
 import { getSessionUser } from "@/lib/auth/session";
 import { listInstitutionAffiliations, wantsInstitutionDashboard } from "@/lib/institutions";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "For Institutions",
   description:
     "Deliver digital and AI learning programmes through Moodle and see cohort participation, completion and certification in institution-scoped Stadilearn dashboards.",
-};
+  path: "/institutions",
+});
 
 export default async function InstitutionsPage() {
   const user = await getSessionUser();

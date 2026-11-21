@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { Card, CtaBand, FeatureGrid, Notice, PageHero, Section, SectionHeader } from "@/components/ui";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "About Stadilearn",
   description: "Stadilearn's mission is to expand practical AI and technology literacy in Kenya through structured learning, teacher enablement and responsible AI.",
-};
+  path: "/about",
+});
 
 export default function AboutPage() {
   return (

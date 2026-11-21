@@ -1,6 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { Faq } from "@/components/ui";
+import { HOME_FAQ, pageMeta, SITE_DESCRIPTION } from "@/lib/seo";
 import { MOODLE_URL, ROUTES } from "@/lib/site";
+
+export const metadata = pageMeta({ description: SITE_DESCRIPTION, path: "/" });
 
 // Landing page — ported 1:1 from the approved index.html design.
 // Markup and classes are unchanged; only `href="#"` links now point at real routes.
@@ -172,7 +176,7 @@ export default function HomePage() {
                 Build skills that <span className="text-primary-container">move with you.</span>
               </h1>
               {/* Supporting Text */}
-              <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+              <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl" data-speakable>
                 Stadilearn helps learners and teachers build practical digital and AI skills through structured,
                 mobile-friendly learning and guided practice. Shaped by Kenyan classrooms and everyday learning
                 experiences.
@@ -699,6 +703,19 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="w-full bg-surface py-space-xl" id="faq">
+        <div className="max-w-7xl mx-auto px-margin">
+          <div className="text-center max-w-2xl mx-auto mb-space-xl">
+            <Kicker>Common questions</Kicker>
+            <h2 className="font-headline-lg text-headline-lg text-on-surface">Answers before you start</h2>
+            <p className="font-body-md text-body-md text-on-surface-variant mt-space-xs">
+              What Stadilearn is, where you study, and how certificates and AI help work.
+            </p>
+          </div>
+          <Faq items={HOME_FAQ} />
         </div>
       </section>
 

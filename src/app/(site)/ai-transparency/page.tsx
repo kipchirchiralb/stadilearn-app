@@ -1,8 +1,12 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage } from "@/components/legal/LegalPage";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "AI Transparency & Safeguarding", description: "How Stadilearn uses AI, its limits, data handling and human oversight." };
+export const metadata = pageMeta({
+  title: "AI Transparency & Safeguarding",
+  description: "How Stadilearn uses AI, its limits, data handling and human oversight.",
+  path: "/ai-transparency",
+});
 
 export default function AiTransparencyPage() {
   return (

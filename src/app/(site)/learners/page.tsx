@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
 import { CtaBand, FeatureGrid, MoodleHandoffNotice, PageHero, Section, SectionHeader, Steps } from "@/components/ui";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "For Learners",
   description: "Learn useful digital and AI skills one step at a time, on your phone, with guided practice and verifiable certificates.",
-};
+  path: "/learners",
+});
 
 export default function LearnersPage() {
   return (

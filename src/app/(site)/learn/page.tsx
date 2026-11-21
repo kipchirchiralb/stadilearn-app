@@ -1,14 +1,20 @@
-import type { Metadata } from "next";
 import { CourseCatalogue } from "@/components/courses/CourseCatalogue";
 import { CtaBand, MoodleHandoffNotice, PageHero, Section } from "@/components/ui";
 import { COURSES } from "@/lib/courses";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "Find your next skill",
   description: "Explore practical courses for digital confidence, AI literacy, and teaching with technology.",
-};
+  path: "/learn",
+});
 
-export default function LearnPage() {
+type Props = { searchParams: Promise<{ q?: string | string[] }> };
+
+export default async function LearnPage({ searchParams }: Props) {
+  const { q } = await searchParams;
+  const initialQuery = Array.isArray(q) ? q[0] ?? "" : q ?? "";
+
   return (
     <>
       <PageHero
@@ -18,7 +24,7 @@ export default function LearnPage() {
         highlight="next skill."
       />
       <Section tone="low">
-        <CourseCatalogue courses={COURSES} />
+        <CourseCatalogue courses={COURSES} initialQuery={initialQuery} />
         <div className="mt-space-lg">
           <MoodleHandoffNotice />
         </div>

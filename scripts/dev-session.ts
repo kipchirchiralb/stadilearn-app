@@ -24,13 +24,19 @@ async function main() {
   if (!["learner", "teacher", "super_admin"].includes(type)) throw new Error("--type must be learner, teacher or super_admin");
   const moodleUserId = flag("--moodle-user-id") ? Number(flag("--moodle-user-id")) : null;
 
-  await appDb.execute(
-    `INSERT INTO users (email, full_name, account_type, status, email_verified_at, moodle_user_id)
-     VALUES (?, ?, ?, 'active', UTC_TIMESTAMP(3), ?)
-     ON DUPLICATE KEY UPDATE account_type = VALUES(account_type), status = 'active',
-       moodle_user_id = COALESCE(VALUES(moodle_user_id), moodle_user_id)`,
-    [email, email.split("@")[0], type, moodleUserId],
-  );
+  // Create or reactivate the account first, then set the role separately: the
+  // 3-super-admin trigger also fires on the INSERT half of an upsert, so an
+  // upsert with account_type fails for existing admins once all 3 slots are used.
+  await appDb.transaction(async (tx) => {
+    await tx.execute(
+      `INSERT INTO users (email, full_name, status, email_verified_at, moodle_user_id)
+       VALUES (?, ?, 'active', UTC_TIMESTAMP(3), ?)
+       ON DUPLICATE KEY UPDATE status = 'active',
+         moodle_user_id = COALESCE(VALUES(moodle_user_id), moodle_user_id)`,
+      [email, email.split("@")[0], moodleUserId],
+    );
+    await tx.execute("UPDATE users SET account_type = ? WHERE email = ? AND account_type <> ?", [type, email, type]);
+  });
   const [user] = await appDb.query<{ id: number }>("SELECT id FROM users WHERE email = ?", [email]);
   const { token, expires } = await createSession(Number(user.id), { userAgent: "dev-session script" });
 

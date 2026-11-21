@@ -98,7 +98,9 @@ export function PageHero({
                 </>
               )}
             </h1>
-            <div className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">{intro}</div>
+            <div className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl" data-speakable>
+              {intro}
+            </div>
             {(primary || secondary || tertiary) && (
               <div className="flex flex-wrap items-center gap-space-sm pt-space-xs">
                 {primary && <ButtonLink cta={primary} />}

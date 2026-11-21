@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
 import { Card, CheckList, CtaBand, FeatureGrid, Notice, PageHero, Section, SectionHeader, Steps } from "@/components/ui";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "Impact & Reporting",
   description: "What Stadilearn measures, how data is collected and interpreted, and how partners and funders receive programme evidence.",
-};
+  path: "/impact",
+});
 
 export default function ImpactPage() {
   return (

@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import { AiDisclosureNotice, CheckList, CtaBand, FeatureGrid, PageHero, Section, SectionHeader } from "@/components/ui";
 import { getSessionUser } from "@/lib/auth/session";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "AI Learning Support",
   description: "How Stadilearn's AI tutor, practice, support and trainer assistants work, and the guardrails that keep learning honest.",
-};
+  path: "/ai-support",
+});
 
 export default async function AiSupportPage() {
   const user = await getSessionUser();

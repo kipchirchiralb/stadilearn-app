@@ -2,6 +2,9 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ButtonLink, Section } from "@/components/ui";
 import { getHeaderUser } from "@/lib/header";
+import { noIndexMeta } from "@/lib/seo";
+
+export const metadata = noIndexMeta("Page not found");
 
 export default async function NotFound() {
   const user = await getHeaderUser();

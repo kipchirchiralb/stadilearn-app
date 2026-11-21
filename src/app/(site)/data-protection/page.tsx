@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { LegalPage } from "@/components/legal/LegalPage";
 import { Card } from "@/components/ui";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "Kenyan Data Protection",
   description: "Stadilearn's responsibilities under the Kenya Data Protection Act, 2019 and how to make a data request.",
-};
+  path: "/data-protection",
+});
 
 export default function DataProtectionPage() {
   return (

@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { ContactForm } from "@/components/forms/ContactForm";
+import { noIndexMeta } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Account recovery", robots: { index: false } };
+export const metadata = noIndexMeta("Account recovery");
 
 export default function AccountRecoveryPage() {
   return (

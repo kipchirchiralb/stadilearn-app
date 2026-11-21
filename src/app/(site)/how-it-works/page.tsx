@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import { Card, CtaBand, Faq, Icon, MoodleHandoffNotice, PageHero, Section, SectionHeader, Steps } from "@/components/ui";
+import { howItWorksFaq, howItWorksSteps, pageMeta } from "@/lib/seo";
 import { MOODLE_HOST } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "How It Works",
   description: "How Stadilearn and Moodle work together: separate accounts, studying in Moodle, and progress, AI help and certificates on Stadilearn.",
-};
+  path: "/how-it-works",
+});
 
 export default function HowItWorksPage() {
   return (
@@ -26,32 +27,7 @@ export default function HowItWorksPage() {
       />
       <Section tone="low">
         <SectionHeader eyebrow="Step by step" title="Your learning journey" />
-        <Steps
-          steps={[
-            {
-              title: "Create your Stadilearn account",
-              body: "Verify your email with a one-time code. Use the same email as Moodle so we can match your accounts. Logins stay separate.",
-              tag: "Stadilearn",
-            },
-            { title: "Find your learning pathway", body: "Browse available courses or join through your institution.", tag: "Stadilearn" },
-            {
-              title: "Study in Moodle",
-              body: "Lessons, quizzes, assignments, discussions and grading take place in Moodle.",
-              tag: "Moodle",
-              accent: true,
-            },
-            {
-              title: "Use Stadilearn around your learning",
-              body: "View progress summaries, ask the AI assistants for help, receive emails, and see certificates and reports where permitted.",
-              tag: "Stadilearn",
-            },
-            {
-              title: "Complete and verify",
-              body: "Meet the course requirements, receive certificate status and share a verification link.",
-              tag: "Stadilearn",
-            },
-          ]}
-        />
+        <Steps steps={howItWorksSteps()} />
       </Section>
       <Section>
         <SectionHeader eyebrow="Who does what" title="Two platforms, clear responsibilities" />
@@ -95,18 +71,7 @@ export default function HowItWorksPage() {
       </Section>
       <Section tone="low">
         <SectionHeader eyebrow="FAQ" title="Common questions" />
-        <Faq
-          items={[
-            { q: "Why are there two websites?", a: "Moodle is a proven learning system for lessons, assessments and grading. Stadilearn adds what Moodle does not: AI assistance, progress summaries, certificates, and reporting for institutions and partners." },
-            { q: "Do I need two accounts?", a: "Yes. Your Stadilearn account and your Moodle account are separate, and signing in to one does not sign you in to the other. Use the same email on both so Stadilearn can match you and show progress or teaching data." },
-            { q: "Where do I study?", a: `In Moodle at ${MOODLE_HOST}. Stadilearn links you to the right course or activity.` },
-            { q: "Where do I see progress?", a: "In your Stadilearn dashboard. Progress is read from Moodle and shows when it was last updated." },
-            { q: "What happens if I forget my Moodle password?", a: "Use the “Forgotten password” link on the Moodle login page. Stadilearn cannot reset Moodle passwords. Stadilearn itself signs you in with an emailed one-time code." },
-            { q: "Does the AI tutor complete assignments?", a: "No. It explains concepts, gives hints and points to course material, but it will not complete graded work for you." },
-            { q: "Can I learn with limited data?", a: "Yes. Pages are lightweight and many lessons have downloadable PDFs. Quizzes and submissions still need a connection to Moodle." },
-            { q: "How are certificates verified?", a: "Each certificate has a unique code. Anyone can check it on the Verify Certificate page." },
-          ]}
-        />
+        <Faq items={howItWorksFaq()} />
       </Section>
       <CtaBand
         body="Create your Stadilearn account, choose a course and open your Moodle learning space."

@@ -1,8 +1,12 @@
-import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/LegalPage";
+import { pageMeta } from "@/lib/seo";
 import { MOODLE_HOST } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Cookie Policy", description: "Cookies and session technologies used by Stadilearn." };
+export const metadata = pageMeta({
+  title: "Cookie Policy",
+  description: "Cookies and session technologies used by Stadilearn.",
+  path: "/cookies",
+});
 
 export default function CookiesPage() {
   return (

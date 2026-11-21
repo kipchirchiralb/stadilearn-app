@@ -1,76 +1,14 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { Card, Faq, Icon, PageHero, Section, SectionHeader } from "@/components/ui";
-import { MOODLE_HOST, MOODLE_URL } from "@/lib/site";
+import { LinkedText } from "@/components/seo/LinkedText";
+import { HELP_TOPICS } from "@/lib/help-faq";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "Help & Support",
   description: "Answers about accounts, one-time codes, Moodle access, downloads, AI assistance, certificates, privacy and institution support.",
-};
-
-const TOPICS: { icon: string; title: string; items: { q: string; a: React.ReactNode }[] }[] = [
-  {
-    icon: "person_add",
-    title: "Accounts and signing in",
-    items: [
-      { q: "How do I create a Stadilearn account?", a: <>Go to <Link className="text-primary underline" href="/signup">Create account</Link>, enter your details and confirm your email with the one-time code we send. Teachers and learners should use the same email they use in Moodle so we can match the accounts.</> },
-      { q: "I did not receive my one-time code", a: "Check spam or promotions folders and make sure the email address is correct. Codes expire after a few minutes; you can request a new one after a short wait." },
-      { q: "How do I sign in?", a: <>Go to <Link className="text-primary underline" href="/login">Sign in</Link>, enter your email and type the code we send you.</> },
-      { q: "I no longer have access to my email", a: <>Use <Link className="text-primary underline" href="/account-recovery">account recovery</Link> and our team will help verify your identity.</> },
-    ],
-  },
-  {
-    icon: "swap_horiz",
-    title: "Stadilearn and Moodle",
-    items: [
-      { q: "Why are there two websites?", a: `Stadilearn handles your account, AI help, progress and certificates. Moodle at ${MOODLE_HOST} is where you study, take quizzes and submit work.` },
-      { q: "Should I use the same email for both?", a: "Yes. Stadilearn looks up your Moodle user by email (read-only) so teachers can see the courses they teach and everyone can see progress. Logins stay separate." },
-      { q: "How do I open Moodle?", a: <>Use the “Open learning space” button in your dashboard, or go to <a className="text-primary underline" href={MOODLE_URL} rel="noopener noreferrer" target="_blank">{MOODLE_HOST}</a>. You sign in to Moodle separately.</> },
-      { q: "I forgot my Moodle password or cannot see my course", a: "Use “Forgotten password” on the Moodle login page. If your course is missing, contact your trainer or our support team — enrolments are managed in Moodle." },
-    ],
-  },
-  {
-    icon: "download",
-    title: "Learning materials and data",
-    items: [
-      { q: "Can I download lessons?", a: "Many lessons include downloadable PDFs in Moodle. Download them on Wi-Fi to study later without data." },
-      { q: "How can I use less data?", a: <>See the <Link className="text-primary underline" href="/offline-toolkit">offline and low-data toolkit</Link> for tips.</> },
-    ],
-  },
-  {
-    icon: "smart_toy",
-    title: "AI assistant",
-    items: [
-      { q: "Why won't the AI answer my quiz question?", a: "The assistant is designed not to complete graded work. It can explain the topic and give hints instead." },
-      { q: "How do I flag a bad answer?", a: "Use the flag button on any AI response. Flagged answers are reviewed by our team." },
-      { q: "The assistant says it is unavailable", a: "Daily usage limits or service interruptions can pause AI features. Your Moodle courses continue to work." },
-    ],
-  },
-  {
-    icon: "workspace_premium",
-    title: "Certificates",
-    items: [
-      { q: "When do I get my certificate?", a: <>Learners and teachers request a certificate from <Link className="text-primary underline" href="/app/certificates">Your certificates</Link> after signing in. A Stadilearn admin checks Moodle completion using your signup email, then issues a branded PDF with a certificate number.</> },
-      { q: "How does someone verify my certificate?", a: <>They enter the certificate number on <Link className="text-primary underline" href="/verify-certificate">Verify Certificate</Link>.</> },
-    ],
-  },
-  {
-    icon: "shield_person",
-    title: "Accessibility and privacy",
-    items: [
-      { q: "How do I request my data or delete my account?", a: <>Use the <Link className="text-primary underline" href="/data-protection#request">data request form</Link>.</> },
-      { q: "I have an accessibility problem", a: <>Tell us on the <Link className="text-primary underline" href="/accessibility">accessibility page</Link> and we will help.</> },
-    ],
-  },
-  {
-    icon: "domain",
-    title: "Institutions and partners",
-    items: [
-      { q: "How do we get institution reports?", a: <>Create an institution account and <Link className="text-primary underline" href="/contact?type=institution">contact us</Link> so we can verify and link it to your cohorts.</> },
-      { q: "Our dashboard shows no data", a: "Access is granted after verification, and figures update after Moodle synchronisation. Check the data freshness label or contact support." },
-    ],
-  },
-];
+  path: "/help",
+});
 
 export default function HelpPage() {
   return (
@@ -85,7 +23,7 @@ export default function HelpPage() {
       />
       <Section tone="low">
         <nav aria-label="Help topics" className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-space-sm mb-space-xl">
-          {TOPICS.map((t, i) => (
+          {HELP_TOPICS.map((t, i) => (
             <a className="flex flex-col items-center gap-space-xs text-center bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-shadow" href={`#topic-${i}`} key={t.title}>
               <Icon className="text-primary text-[28px]" name={t.icon} />
               <span className="font-label-sm text-label-sm text-on-surface">{t.title}</span>
@@ -93,10 +31,10 @@ export default function HelpPage() {
           ))}
         </nav>
         <div className="space-y-space-xl">
-          {TOPICS.map((t, i) => (
+          {HELP_TOPICS.map((t, i) => (
             <div className="scroll-mt-28" id={`topic-${i}`} key={t.title}>
               <SectionHeader title={t.title} />
-              <Faq items={t.items} />
+              <Faq items={t.items.map((item) => ({ q: item.q, a: <LinkedText text={item.a} /> }))} />
             </div>
           ))}
         </div>

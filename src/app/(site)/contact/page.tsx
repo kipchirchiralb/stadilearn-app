@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { Card, Eyebrow, Icon, Section } from "@/components/ui";
+import { pageMeta } from "@/lib/seo";
 import { CONTACT } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: "Contact",
   description: "Contact Stadilearn about learning, teacher training, institution partnerships, support, certificates or media.",
-};
+  path: "/contact",
+});
 
 type Props = { searchParams: Promise<{ type?: string; course?: string; brief?: string }> };
 
